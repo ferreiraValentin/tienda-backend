@@ -60,6 +60,7 @@ app.post("/productos", upload.single("imagen"), (req, res) => {
   precio: Number(req.body.precio),
   stock: Number(req.body.stock),
   categoria: req.body.categoria,
+  destacado: req.body.destacado === "on",
   imagen: `${API_URL}/imagenes/${req.file.filename}`,
 };
 

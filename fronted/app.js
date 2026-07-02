@@ -23,9 +23,19 @@ function renderizarProductos(productos) {
 
     div.innerHTML = `
       <div class="imagen-producto">
-        ${prod.categoria === "Ofertas" ? '<span class="oferta-tag">🔥 OFERTA</span>' : ''}
-        <img src="${prod.imagen}" alt="${prod.nombre}">
-      </div>
+
+  ${prod.destacado
+    ? '<span class="destacado-tag">⭐ DESTACADO</span>'
+    : ''
+  }
+
+  ${prod.categoria === "Ofertas"
+    ? '<span class="oferta-tag">🔥 OFERTA</span>'
+    : ''
+  }
+
+  <img src="${prod.imagen}" alt="${prod.nombre}">
+</div>
 
       <span class="categoria-tag">
         ${prod.categoria || "Sin categoría"}
