@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel Admin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <h1>⚙️ Panel Administrador</h1>
+
+  <section class="admin">
+    <h2>Crear producto</h2>
+
+    <form id="productoForm">
+      <input type="text" name="nombre" placeholder="Nombre del producto" required>
+
+      <input type="number" name="precio" placeholder="Precio" required>
+
+      <input type="number" name="stock" placeholder="Stock" min="0" required>
+
+      <select name="categoria" required>
+  <option value="">Seleccionar categoría</option>
+  <option value="Audio">Audio</option>
+  <option value="Cargadores">Cargadores</option>
+  <option value="Cables">Cables</option>
+  <option value="Accesorios">Accesorios</option>
+  <option value="Ofertas">Ofertas</option>
+  <option value="Hogar">Hogar</option>
+</select>
+
+      <input type="file" name="imagen" required>
+
+      <button type="submit">Crear producto</button>
+    </form>
+
+    <hr>
+
+    <h2>Productos cargados</h2>
+    <div id="listaProductos"></div>
+
+  </section>
+
+  <script src="admin.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tienda Premium</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="logo-container">
+      <img src="./imagen/logo.jpeg" alt="Tienda Premium">
+      <div>
+        <h1>Tienda Premium</h1>
+        <p>Tecnología y accesorios</p>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h2>Bienvenido a Tienda Premium</h2>
+    <p>Los mejores productos al mejor precio</p>
+  </section>
+
+  <section class="buscador-container">
+    <input
+      type="text"
+      id="buscador"
+      placeholder="🔍 Buscar productos..."
+    >
+  </section>
+
+  <section class="categorias">
+
+    <button onclick="filtrarCategoria('Todos')">Todos</button>
+
+    <button onclick="filtrarCategoria('Audio')">Audio</button>
+
+    <button onclick="filtrarCategoria('Cargadores')">Cargadores</button>
+
+    <button onclick="filtrarCategoria('Cables')">Cables</button>
+
+    <button onclick="filtrarCategoria('Accesorios')">Accesorios</button>
+
+    <button onclick="filtrarCategoria('Ofertas')">Ofertas</button>
+
+    <button onclick="filtrarCategoria('Hogar')">Hogar</button>
+
+  </section>
+
+  <div class="container">
+
+    <div id="productos"></div>
+
+    <div id="carrito-contenedor">
+      <h2>🛒 Carrito</h2>
+
+      <ul id="carrito"></ul>
+
+      <p>
+        <strong>Total: $<span id="total">0</span></strong>
+      </p>
+
+      <button onclick="vaciarCarrito()">Vaciar carrito</button>
+      <button onclick="comprarWhatsApp()">Comprar por WhatsApp</button>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>© 2025 Tienda Premium</p>
+
+    <p>📍 San Isidro, Buenos Aires, Argentina</p>
+
+    <p>📧 tiendapremium.ar@gmail.com</p>
+
+    <p>📱 WhatsApp: +54 9 11 5646-1555</p>
+  </footer>
+
+  <a
+    href="https://wa.me/5491156461555"
+    class="whatsapp-float"
+    target="_blank"
+  >
+    <img
+      src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+      alt="WhatsApp"
+    >
+  </a>
+
+  <script src="app.js"></script>
+
+</body>
+</html>
