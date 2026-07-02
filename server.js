@@ -54,10 +54,11 @@ app.get("/productos", (req, res) => {
 app.post("/productos", upload.single("imagen"), (req, res) => {
   const productos = leerProductos();
 
-  const nuevoProducto = {
+ const nuevoProducto = {
   id: Date.now(),
   nombre: req.body.nombre,
   precio: Number(req.body.precio),
+  stock: Number(req.body.stock),
   categoria: req.body.categoria,
   imagen: `${API_URL}/imagenes/${req.file.filename}`,
 };
