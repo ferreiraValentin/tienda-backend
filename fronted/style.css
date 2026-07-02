@@ -432,3 +432,16 @@ footer a:hover{
 .bloque-info p{
   margin:10px 0;
 }
+
+.datos-envio{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.datos-envio input{
+  padding:10px;
+  border:1px solid #ccc;
+  border-radius:8px;
+}

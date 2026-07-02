@@ -203,6 +203,16 @@ function comprarWhatsApp() {
 
   let mensaje = "Hola, quiero comprar:\n\n";
 
+const nombre = document.getElementById("nombreCliente").value;
+const ciudad = document.getElementById("ciudadCliente").value;
+const provincia = document.getElementById("provinciaCliente").value;
+const cp = document.getElementById("cpCliente").value;
+
+if (!nombre || !ciudad || !provincia || !cp) {
+  alert("Completá los datos de envío");
+  return;
+}
+
   carrito.forEach(prod => {
     mensaje += `- ${prod.nombre} x${prod.cantidad} = $${prod.precio * prod.cantidad}\n`;
   });
