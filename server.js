@@ -55,11 +55,13 @@ app.post("/productos", upload.single("imagen"), (req, res) => {
   const productos = leerProductos();
 
   const nuevoProducto = {
-    id: Date.now(),
-    nombre: req.body.nombre,
-    precio: Number(req.body.precio),
-    imagen: `${API_URL}/imagenes/${req.file.filename}`,
-  };
+  id: Date.now(),
+  nombre: req.body.nombre,
+  precio: Number(req.body.precio),
+  categoria: req.body.categoria,
+  imagen: `${API_URL}/imagenes/${req.file.filename}`,
+};
+
 
   productos.push(nuevoProducto);
   guardarProductos(productos);
