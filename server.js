@@ -9,8 +9,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const PORT = process.env.PORT || 3000;
+
+const API_URL = "https://tienda-api-5ulq.onrender.com";
+
 const carpetaImagenes = path.join(__dirname, "backend", "imagenes");
 const archivoProductos = path.join(__dirname, "productos.json");
+
+if (!fs.existsSync(carpetaImagenes)) {
+  fs.mkdirSync(carpetaImagenes, { recursive: true });
+}
 
 app.use("/imagenes", express.static(carpetaImagenes));
 
@@ -50,7 +58,7 @@ app.post("/productos", upload.single("imagen"), (req, res) => {
     id: Date.now(),
     nombre: req.body.nombre,
     precio: Number(req.body.precio),
-    imagen: `http://localhost:3000/imagenes/${req.file.filename}`,
+    imagen: `${API_URL}/imagenes/${req.file.filename}`,
   };
 
   productos.push(nuevoProducto);
@@ -85,6 +93,6 @@ app.delete("/productos/:id", (req, res) => {
   res.json({ mensaje: "Producto eliminado correctamente ✅" });
 });
 
-app.listen(3000, () => {
-  console.log("Servidor corriendo en http://localhost:3000");
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
 });
