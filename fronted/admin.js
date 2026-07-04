@@ -27,6 +27,14 @@ const previewImagen = document.getElementById("previewImagen");
 let modoEdicion = false;
 
 // ==========================
+// Optimización de imágenes con Cloudinary (thumbnails livianos)
+// ==========================
+function optimizarImagen(url, ancho = 200) {
+  if (!url || !url.includes("/upload/")) return url;
+  return url.replace("/upload/", `/upload/f_auto,q_auto,w_${ancho}/`);
+}
+
+// ==========================
 // Crear o actualizar producto
 // ==========================
 productoForm.addEventListener("submit", async (e) => {
@@ -97,7 +105,7 @@ function editarProducto(producto) {
   // Ya no es obligatorio subir una imagen nueva al editar
   imagenInput.removeAttribute("required");
   imagenActualDiv.style.display = "block";
-  previewImagen.src = producto.imagen;
+  previewImagen.src = optimizarImagen(producto.imagen, 200);
 
   formTitulo.textContent = "Editar producto";
   botonSubmit.textContent = "Actualizar producto";
@@ -139,7 +147,7 @@ async function cargarProductos() {
       <h3>${producto.nombre}</h3>
       <p>$${producto.precio} — Stock: ${producto.stock}</p>
       <p>${producto.categoria} ${producto.destacado ? "⭐" : ""}</p>
-      <img src="${producto.imagen}" width="120">
+      <img src="${optimizarImagen(producto.imagen, 200)}" width="120" loading="lazy">
       <br><br>
       <button class="btn-editar">Editar</button>
       <button class="btn-eliminar">Eliminar</button>

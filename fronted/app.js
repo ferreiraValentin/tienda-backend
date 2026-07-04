@@ -12,6 +12,18 @@ let categoriaActual = "Todos";
 cargarProductos();
 mostrarCarrito();
 
+// ==========================
+// Optimización de imágenes con Cloudinary
+// ==========================
+// Inserta transformaciones en la URL de Cloudinary para servir la imagen
+// en el formato más liviano posible (f_auto), con compresión inteligente
+// (q_auto) y limitando el ancho máximo (w_...), sin tener que subir de
+// nuevo ninguna imagen.
+function optimizarImagen(url, ancho = 400) {
+  if (!url || !url.includes("/upload/")) return url;
+  return url.replace("/upload/", `/upload/f_auto,q_auto,w_${ancho}/`);
+}
+
 function renderizarProductos(productos) {
   contenedor.innerHTML = "";
 
@@ -20,6 +32,7 @@ function renderizarProductos(productos) {
     div.classList.add("producto");
 
     const stock = prod.stock ?? 0;
+    const imagenOptimizada = optimizarImagen(prod.imagen, 400);
 
     div.innerHTML = `
       <div class="imagen-producto">
@@ -34,7 +47,7 @@ function renderizarProductos(productos) {
     : ''
   }
 
-  <img src="${prod.imagen}" alt="${prod.nombre}">
+  <img src="${imagenOptimizada}" alt="${prod.nombre}" loading="lazy">
 </div>
 
       <span class="categoria-tag">
@@ -51,7 +64,7 @@ function renderizarProductos(productos) {
 
       ${
         stock > 0
-          ? `<button onclick="agregarCarrito(${prod.id})">Agregar</button>`
+          ? `<button onclick="agregarCarrito('${prod._id}')">Agregar</button>`
           : `<button disabled>Agotado</button>`
       }
     `;
@@ -98,7 +111,7 @@ function filtrarCategoria(categoria) {
 }
 
 function agregarCarrito(id) {
-  const producto = productosGlobal.find(p => p.id === id);
+  const producto = productosGlobal.find(p => p._id === id);
 
   if (!producto) return;
 
@@ -118,7 +131,7 @@ function agregarCarrito(id) {
     productoEnCarrito.cantidad++;
   } else {
     carrito.push({
-      id: producto.id,
+      id: producto._id,
       nombre: producto.nombre,
       precio: producto.precio,
       cantidad: 1
@@ -160,7 +173,7 @@ function mostrarCarrito() {
 
 function sumarCantidad(index) {
   const item = carrito[index];
-  const producto = productosGlobal.find(p => p.id === item.id);
+  const producto = productosGlobal.find(p => p._id === item.id);
 
   if (producto && item.cantidad >= producto.stock) {
     alert("No hay más stock disponible");
