@@ -1,8 +1,11 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+const mongoose = require("mongoose");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
 const app = express();
 
@@ -11,93 +14,118 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
-const API_URL = "https://tienda-api-5ulq.onrender.com";
+// ==========================
+// Conexión a MongoDB
+// ==========================
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ Conectado a MongoDB Atlas"))
+  .catch((err) => console.error("❌ Error al conectar a MongoDB:", err));
 
-const carpetaImagenes = path.join(__dirname, "backend", "imagenes");
-const archivoProductos = path.join(__dirname, "productos.json");
+// ==========================
+// Modelo de Producto
+// ==========================
+const productoSchema = new mongoose.Schema({
+  nombre: { type: String, required: true },
+  precio: { type: Number, required: true },
+  stock: { type: Number, required: true },
+  categoria: { type: String, required: true },
+  destacado: { type: Boolean, default: false },
+  imagen: { type: String, required: true },
+  creadoEn: { type: Date, default: Date.now },
+});
 
-if (!fs.existsSync(carpetaImagenes)) {
-  fs.mkdirSync(carpetaImagenes, { recursive: true });
-}
+const Producto = mongoose.model("Producto", productoSchema);
 
-app.use("/imagenes", express.static(carpetaImagenes));
+// ==========================
+// Configuración de Cloudinary
+// ==========================
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-const storage = multer.diskStorage({
-  destination: carpetaImagenes,
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "tienda-productos", // carpeta donde se guardan las imágenes en Cloudinary
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
   },
 });
 
 const upload = multer({ storage });
 
-function leerProductos() {
-  if (!fs.existsSync(archivoProductos)) {
-    fs.writeFileSync(archivoProductos, "[]");
-  }
-
-  return JSON.parse(fs.readFileSync(archivoProductos, "utf-8"));
-}
-
-function guardarProductos(productos) {
-  fs.writeFileSync(archivoProductos, JSON.stringify(productos, null, 2));
-}
-
+// ==========================
+// Rutas
+// ==========================
 app.get("/", (req, res) => {
   res.send("Servidor funcionando ✅");
 });
 
-app.get("/productos", (req, res) => {
-  res.json(leerProductos());
+// Obtener todos los productos
+app.get("/productos", async (req, res) => {
+  try {
+    const productos = await Producto.find().sort({ creadoEn: -1 });
+    res.json(productos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al obtener productos" });
+  }
 });
 
-app.post("/productos", upload.single("imagen"), (req, res) => {
-  const productos = leerProductos();
+// Crear un producto nuevo
+app.post("/productos", upload.single("imagen"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ mensaje: "No se subió ninguna imagen" });
+    }
 
- const nuevoProducto = {
-  id: Date.now(),
-  nombre: req.body.nombre,
-  precio: Number(req.body.precio),
-  stock: Number(req.body.stock),
-  categoria: req.body.categoria,
-  destacado: req.body.destacado === "on",
-  imagen: `${API_URL}/imagenes/${req.file.filename}`,
-};
+    const nuevoProducto = new Producto({
+      nombre: req.body.nombre,
+      precio: Number(req.body.precio),
+      stock: Number(req.body.stock),
+      categoria: req.body.categoria,
+      destacado: req.body.destacado === "on",
+      imagen: req.file.path, // Cloudinary devuelve la URL directa acá
+    });
 
+    await nuevoProducto.save();
 
-  productos.push(nuevoProducto);
-  guardarProductos(productos);
-
-  res.json({
-    mensaje: "Producto creado correctamente ✅",
-    producto: nuevoProducto,
-  });
+    res.json({
+      mensaje: "Producto creado correctamente ✅",
+      producto: nuevoProducto,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al crear el producto" });
+  }
 });
 
-app.delete("/productos/:id", (req, res) => {
-  let productos = leerProductos();
+// Eliminar un producto
+app.delete("/productos/:id", async (req, res) => {
+  try {
+    const producto = await Producto.findById(req.params.id);
 
-  const id = Number(req.params.id);
-  const producto = productos.find(p => p.id === id);
+    if (!producto) {
+      return res.status(404).json({ mensaje: "Producto no encontrado" });
+    }
 
-  if (!producto) {
-    return res.status(404).json({ mensaje: "Producto no encontrado" });
+    // Extraer el public_id de Cloudinary a partir de la URL para poder borrar la imagen
+    const partes = producto.imagen.split("/");
+    const nombreArchivo = partes[partes.length - 1].split(".")[0];
+    const publicId = `tienda-productos/${nombreArchivo}`;
+
+    await cloudinary.uploader.destroy(publicId);
+    await Producto.findByIdAndDelete(req.params.id);
+
+    res.json({ mensaje: "Producto eliminado correctamente ✅" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al eliminar el producto" });
   }
-
-  const nombreImagen = producto.imagen.split("/").pop();
-  const rutaImagen = path.join(carpetaImagenes, nombreImagen);
-
-  if (fs.existsSync(rutaImagen)) {
-    fs.unlinkSync(rutaImagen);
-  }
-
-  productos = productos.filter(p => p.id !== id);
-  guardarProductos(productos);
-
-  res.json({ mensaje: "Producto eliminado correctamente ✅" });
 });
 
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
-

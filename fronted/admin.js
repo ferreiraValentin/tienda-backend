@@ -33,7 +33,7 @@ async function cargarProductos() {
         <p>$${producto.precio}</p>
         <img src="${producto.imagen}" width="120">
         <br><br>
-        <button onclick="eliminarProducto(${producto.id})">
+        <button onclick="eliminarProducto('${producto._id}')">
           Eliminar
         </button>
       </div>
