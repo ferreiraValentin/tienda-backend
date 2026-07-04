@@ -1,5 +1,19 @@
 const API = "https://tienda-api-5ulq.onrender.com";
 
+// ==========================
+// Protección de acceso: si no hay token, redirige al login
+// ==========================
+const token = localStorage.getItem("adminToken");
+
+if (!token) {
+  window.location.href = "login.html";
+}
+
+document.getElementById("botonLogout").addEventListener("click", () => {
+  localStorage.removeItem("adminToken");
+  window.location.href = "login.html";
+});
+
 const productoForm = document.getElementById("productoForm");
 const listaProductos = document.getElementById("listaProductos");
 const formTitulo = document.getElementById("formTitulo");
@@ -28,6 +42,7 @@ productoForm.addEventListener("submit", async (e) => {
       // Actualizar producto existente
       res = await fetch(`${API}/productos/${id}`, {
         method: "PUT",
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
     } else {
@@ -38,8 +53,16 @@ productoForm.addEventListener("submit", async (e) => {
       }
       res = await fetch(`${API}/productos`, {
         method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
+    }
+
+    if (res.status === 401) {
+      alert("Tu sesión expiró, iniciá sesión de nuevo");
+      localStorage.removeItem("adminToken");
+      window.location.href = "login.html";
+      return;
     }
 
     const data = await res.json();
@@ -139,7 +162,15 @@ async function eliminarProducto(id) {
 
   const res = await fetch(`${API}/productos/${id}`, {
     method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
   });
+
+  if (res.status === 401) {
+    alert("Tu sesión expiró, iniciá sesión de nuevo");
+    localStorage.removeItem("adminToken");
+    window.location.href = "login.html";
+    return;
+  }
 
   const data = await res.json();
 

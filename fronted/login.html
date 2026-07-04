@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Iniciar sesión - Panel Admin</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .login-box {
+      max-width: 350px;
+      margin: 100px auto;
+      padding: 30px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .login-box input {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    .login-box button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+    #errorLogin {
+      color: #d33;
+      margin-top: 10px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-box">
+    <h2>🔒 Iniciar sesión</h2>
+    <form id="loginForm">
+      <input type="text" id="usuario" placeholder="Usuario" required>
+      <input type="password" id="password" placeholder="Contraseña" required>
+      <button type="submit">Ingresar</button>
+    </form>
+    <p id="errorLogin">Usuario o contraseña incorrectos</p>
+  </div>
+
+  <script>
+    const API = "https://tienda-api-5ulq.onrender.com";
+    const loginForm = document.getElementById("loginForm");
+    const errorLogin = document.getElementById("errorLogin");
+
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const usuario = document.getElementById("usuario").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const res = await fetch(`${API}/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ usuario, password }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          errorLogin.style.display = "block";
+          return;
+        }
+
+        localStorage.setItem("adminToken", data.token);
+        window.location.href = "admin.html";
+      } catch (error) {
+        console.error(error);
+        errorLogin.textContent = "Error de conexión con el servidor";
+        errorLogin.style.display = "block";
+      }
+    });
+  </script>
+
+</body>
+</html>

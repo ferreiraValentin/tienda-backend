@@ -9,6 +9,8 @@ const multer = require("multer");
 const mongoose = require("mongoose");
 const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 
@@ -60,6 +62,52 @@ const storage = new CloudinaryStorage({
 const upload = multer({ storage });
 
 // ==========================
+// Autenticación
+// ==========================
+
+// Middleware que protege rutas: exige un token válido
+function verificarToken(req, res, next) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ mensaje: "No autorizado, falta el token" });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    jwt.verify(token, process.env.JWT_SECRET);
+    next();
+  } catch (error) {
+    return res.status(401).json({ mensaje: "Token inválido o expirado" });
+  }
+}
+
+// Login: valida usuario y contraseña, devuelve un token
+app.post("/login", async (req, res) => {
+  try {
+    const { usuario, password } = req.body;
+
+    if (usuario !== process.env.ADMIN_USER) {
+      return res.status(401).json({ mensaje: "Usuario o contraseña incorrectos" });
+    }
+
+    const passwordCorrecta = await bcrypt.compare(password, process.env.ADMIN_PASSWORD_HASH);
+
+    if (!passwordCorrecta) {
+      return res.status(401).json({ mensaje: "Usuario o contraseña incorrectos" });
+    }
+
+    const token = jwt.sign({ usuario }, process.env.JWT_SECRET, { expiresIn: "8h" });
+
+    res.json({ mensaje: "Login correcto ✅", token });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al iniciar sesión" });
+  }
+});
+
+// ==========================
 // Rutas
 // ==========================
 app.get("/", (req, res) => {
@@ -78,7 +126,7 @@ app.get("/productos", async (req, res) => {
 });
 
 // Crear un producto nuevo
-app.post("/productos", upload.single("imagen"), async (req, res) => {
+app.post("/productos", verificarToken, upload.single("imagen"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ mensaje: "No se subió ninguna imagen" });
@@ -106,7 +154,7 @@ app.post("/productos", upload.single("imagen"), async (req, res) => {
 });
 
 // Actualizar (editar) un producto existente
-app.put("/productos/:id", upload.single("imagen"), async (req, res) => {
+app.put("/productos/:id", verificarToken, upload.single("imagen"), async (req, res) => {
   try {
     const producto = await Producto.findById(req.params.id);
 
@@ -144,7 +192,7 @@ app.put("/productos/:id", upload.single("imagen"), async (req, res) => {
 });
 
 // Eliminar un producto
-app.delete("/productos/:id", async (req, res) => {
+app.delete("/productos/:id", verificarToken, async (req, res) => {
   try {
     const producto = await Producto.findById(req.params.id);
 
