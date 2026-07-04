@@ -105,8 +105,17 @@ if (buscador) {
   buscador.addEventListener("input", aplicarFiltros);
 }
 
-function filtrarCategoria(categoria) {
+function filtrarCategoria(categoria, boton) {
   categoriaActual = categoria;
+
+  document.querySelectorAll(".categorias button").forEach(btn => {
+    btn.classList.remove("activa");
+  });
+
+  if (boton) {
+    boton.classList.add("activa");
+  }
+
   aplicarFiltros();
 }
 
