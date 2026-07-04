@@ -633,6 +633,183 @@ button:disabled {
 }
 
 /* ==========================================================
+   ADMIN — barra superior
+   ========================================================== */
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-panel);
+  padding: 18px 30px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.admin-topbar::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--blue), var(--red));
+}
+
+.admin-topbar h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, var(--blue-soft), var(--red-soft));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.admin-topbar button {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: .2s;
+}
+
+.admin-topbar button:hover {
+  border-color: var(--red);
+  color: var(--red-soft);
+}
+
+.check-destacado {
+  color: var(--text-muted);
+}
+
+.imagen-actual-preview {
+  display: none;
+  margin: 10px 0;
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+.imagen-actual-preview img {
+  border-radius: var(--radius-sm);
+  margin: 6px 0;
+  background: var(--bg-tile);
+  padding: 4px;
+}
+
+.nota-imagen {
+  font-size: 0.85em;
+  color: var(--text-faint);
+}
+
+.boton-cancelar {
+  display: none;
+  background: transparent !important;
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted) !important;
+  box-shadow: none !important;
+}
+
+.boton-cancelar:hover {
+  border-color: var(--red);
+  color: var(--red-soft) !important;
+}
+
+.lista-admin {
+  margin-top: 20px;
+}
+
+.producto-admin {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 15px;
+  margin: 15px 0;
+  transition: .2s;
+}
+
+.producto-admin:hover {
+  border-color: var(--blue);
+}
+
+.producto-admin img {
+  background: var(--bg-tile);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.producto-admin-info {
+  flex: 1;
+  min-width: 150px;
+}
+
+.producto-admin-info h3 {
+  margin: 0 0 6px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.producto-admin-info p {
+  margin: 2px 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.producto-admin-cat {
+  color: var(--blue-soft) !important;
+  font-family: var(--font-accent);
+  font-weight: 600;
+}
+
+.producto-admin-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.producto-admin-acciones .btn-editar {
+  background: linear-gradient(90deg, var(--blue), #1a5fc7);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  cursor: pointer;
+  font-family: var(--font-accent);
+  font-weight: 600;
+}
+
+.producto-admin-acciones .btn-eliminar {
+  background: transparent;
+  border: 1px solid var(--red);
+  color: var(--red-soft);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  cursor: pointer;
+  font-family: var(--font-accent);
+  font-weight: 600;
+}
+
+.producto-admin-acciones .btn-eliminar:hover {
+  background: rgba(255, 47, 77, 0.1);
+}
+
+@media (max-width: 600px) {
+  .producto-admin {
+    flex-wrap: wrap;
+  }
+}
+
+/* ==========================================================
    RESPONSIVE
    ========================================================== */
 

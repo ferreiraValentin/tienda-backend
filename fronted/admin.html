@@ -2,8 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tienda Premium</title>
+  <title>Panel Admin - Tienda Premium</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,148 +12,57 @@
 </head>
 <body>
 
-  <header>
-    <div class="logo-container">
-      <img src="./imagen/logo.jpeg" alt="Tienda Premium">
-      <div>
-        <h1>Tienda Premium</h1>
-        <p>Tecnología y accesorios</p>
+  <div class="admin-topbar">
+    <h1>⚙️ Panel Administrador</h1>
+    <button id="botonLogout">Cerrar sesión</button>
+  </div>
+
+  <section class="admin">
+    <h2 id="formTitulo">Crear producto</h2>
+
+    <form id="productoForm">
+      <input type="hidden" name="id" id="productoId">
+
+      <input type="text" name="nombre" id="nombre" placeholder="Nombre del producto" required>
+
+      <input type="number" name="precio" id="precio" placeholder="Precio" required>
+
+      <input type="number" name="stock" id="stock" placeholder="Stock" min="0" required>
+
+      <select name="categoria" id="categoria" required>
+        <option value="">Seleccionar categoría</option>
+        <option value="Audio">Audio</option>
+        <option value="Cargadores">Cargadores</option>
+        <option value="Cables">Cables</option>
+        <option value="Accesorios">Accesorios</option>
+        <option value="Ofertas">Ofertas</option>
+        <option value="Hogar">Hogar</option>
+      </select>
+
+      <label class="check-destacado">
+        <input type="checkbox" name="destacado" id="destacado">
+        ⭐ Producto destacado
+      </label>
+
+      <div id="imagenActual" class="imagen-actual-preview">
+        <p>Imagen actual:</p>
+        <img id="previewImagen" src="" width="90">
+        <p class="nota-imagen">Si no seleccionás una imagen nueva, se mantiene la actual.</p>
       </div>
-    </div>
-  </header>
 
-  <section class="hero">
-    <h2>Bienvenido a Tienda Premium</h2>
-    <p>Los mejores productos al mejor precio</p>
+      <input type="file" name="imagen" id="imagenInput">
+
+      <button type="submit" id="botonSubmit">Crear producto</button>
+      <button type="button" id="botonCancelar" class="boton-cancelar">Cancelar edición</button>
+    </form>
   </section>
 
-  <section class="buscador-container">
-    <input
-      type="text"
-      id="buscador"
-      placeholder="🔍 Buscar productos..."
-    >
+  <section class="admin lista-admin">
+    <h2>Productos cargados</h2>
+    <div id="listaProductos"></div>
   </section>
 
-
-<section class="destacados">
-  <h2>⭐ Productos Destacados</h2>
-
-  <div class="destacados-info">
-    Descubrí nuestros productos más recomendados y ofertas especiales.
-  </div>
-</section>
-
-<section class="info-tienda">
-
-  <div class="bloque-info">
-    <h2>🚚 Envíos</h2>
-
-    <p>
-      Realizamos envíos a todo el país.
-    </p>
-
-    <p>
-      El costo y tiempo de entrega se informan al momento de confirmar la compra.
-    </p>
-  </div>
-
-  <div class="bloque-info">
-    <h2>💳 Métodos de pago</h2>
-
-    <p>✅ Transferencia bancaria</p>
-    <p>✅ Mercado Pago</p>
-    <p>✅ Efectivo (retiro coordinado)</p>
-  </div>
-
-</section>
-
-  <section class="categorias">
-
-    <button class="activa" onclick="filtrarCategoria('Todos', this)">Todos</button>
-
-    <button onclick="filtrarCategoria('Audio', this)">Audio</button>
-
-    <button onclick="filtrarCategoria('Cargadores', this)">Cargadores</button>
-
-    <button onclick="filtrarCategoria('Cables', this)">Cables</button>
-
-    <button onclick="filtrarCategoria('Accesorios', this)">Accesorios</button>
-
-    <button onclick="filtrarCategoria('Ofertas', this)">Ofertas</button>
-
-    <button onclick="filtrarCategoria('Hogar', this)">Hogar</button>
-
-  </section>
-
-  <div class="container">
-
-    <div id="productos"></div>
-
-    <div id="carrito-contenedor">
-      <h2>🛒 Carrito</h2>
-
-      <div class="datos-envio">
-  <input type="text" id="nombreCliente" placeholder="Nombre y Apellido">
-
-  <input type="text" id="ciudadCliente" placeholder="Ciudad">
-
-  <input type="text" id="provinciaCliente" placeholder="Provincia">
-
-  <input type="text" id="cpCliente" placeholder="Código Postal">
-</div>
-      
-<ul id="carrito"></ul>
-
-      <p>
-        <strong>Total: $<span id="total">0</span></strong>
-      </p>
-
-      <button onclick="vaciarCarrito()">Vaciar carrito</button>
-      <button onclick="comprarWhatsApp()">Comprar por WhatsApp</button>
-    </div>
-
-  </div>
-
- <footer>
-  <p>© 2025 Tienda Premium</p>
-
-  <p>📍 San Isidro, Buenos Aires, Argentina</p>
-
-  <p>
-    📸
-    <a href="https://instagram.com/Tiendapremium.store" target="_blank">
-      Instagram
-    </a>
-  </p>
-
-  <p>
-    📧
-    <a href="mailto:tiendapremium.ar@gmail.com">
-      tiendapremium.ar@gmail.com
-    </a>
-  </p>
-
-  <p>
-    📱
-    <a href="https://wa.me/5491156461555" target="_blank">
-      WhatsApp
-    </a>
-  </p>
-</footer>
-
-  <a
-    href="https://wa.me/5491156461555"
-    class="whatsapp-float"
-    target="_blank"
-  >
-    <img
-      src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
-      alt="WhatsApp"
-    >
-  </a>
-
-  <script src="app.js"></script>
+  <script src="admin.js"></script>
 
 </body>
 </html>

@@ -141,16 +141,19 @@ async function cargarProductos() {
 
   productos.forEach((producto) => {
     const div = document.createElement("div");
-    div.style = "border:1px solid #ddd; padding:15px; margin:15px 0; border-radius:10px;";
+    div.className = "producto-admin";
 
     div.innerHTML = `
-      <h3>${producto.nombre}</h3>
-      <p>$${producto.precio} — Stock: ${producto.stock}</p>
-      <p>${producto.categoria} ${producto.destacado ? "⭐" : ""}</p>
-      <img src="${optimizarImagen(producto.imagen, 200)}" width="120" loading="lazy">
-      <br><br>
-      <button class="btn-editar">Editar</button>
-      <button class="btn-eliminar">Eliminar</button>
+      <img src="${optimizarImagen(producto.imagen, 200)}" width="90" loading="lazy">
+      <div class="producto-admin-info">
+        <h3>${producto.nombre}</h3>
+        <p>$${producto.precio} — Stock: ${producto.stock}</p>
+        <p class="producto-admin-cat">${producto.categoria} ${producto.destacado ? "⭐" : ""}</p>
+      </div>
+      <div class="producto-admin-acciones">
+        <button class="btn-editar">Editar</button>
+        <button class="btn-eliminar">Eliminar</button>
+      </div>
     `;
 
     div.querySelector(".btn-editar").addEventListener("click", () => editarProducto(producto));
