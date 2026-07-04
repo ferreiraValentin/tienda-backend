@@ -30,17 +30,74 @@ mongoose
 // ==========================
 // Modelo de Producto
 // ==========================
+const CATEGORIAS_VALIDAS = [
+  "Audio",
+  "Cargadores",
+  "Cables",
+  "Accesorios",
+  "Ofertas",
+  "Hogar",
+];
+
 const productoSchema = new mongoose.Schema({
-  nombre: { type: String, required: true },
-  precio: { type: Number, required: true },
-  stock: { type: Number, required: true },
-  categoria: { type: String, required: true },
+  nombre: {
+    type: String,
+    required: true,
+    trim: true,
+    minlength: 2,
+    maxlength: 100,
+  },
+  precio: {
+    type: Number,
+    required: true,
+    min: [0.01, "El precio tiene que ser mayor a 0"],
+  },
+  stock: {
+    type: Number,
+    required: true,
+    min: [0, "El stock no puede ser negativo"],
+  },
+  categoria: {
+    type: String,
+    required: true,
+    enum: {
+      values: CATEGORIAS_VALIDAS,
+      message: "Categoría inválida",
+    },
+  },
   destacado: { type: Boolean, default: false },
   imagen: { type: String, required: true },
   creadoEn: { type: Date, default: Date.now },
 });
 
 const Producto = mongoose.model("Producto", productoSchema);
+
+// Valida los datos del body antes de crear/editar un producto.
+// Devuelve un array de errores (vacío si todo está bien).
+function validarDatosProducto(body) {
+  const errores = [];
+
+  const nombre = (body.nombre || "").trim();
+  if (nombre.length < 2 || nombre.length > 100) {
+    errores.push("El nombre debe tener entre 2 y 100 caracteres");
+  }
+
+  const precio = Number(body.precio);
+  if (Number.isNaN(precio) || precio <= 0) {
+    errores.push("El precio debe ser un número mayor a 0");
+  }
+
+  const stock = Number(body.stock);
+  if (Number.isNaN(stock) || stock < 0 || !Number.isInteger(stock)) {
+    errores.push("El stock debe ser un número entero, no negativo");
+  }
+
+  if (!CATEGORIAS_VALIDAS.includes(body.categoria)) {
+    errores.push("La categoría seleccionada no es válida");
+  }
+
+  return errores;
+}
 
 // ==========================
 // Configuración de Cloudinary
@@ -132,6 +189,14 @@ app.post("/productos", verificarToken, upload.single("imagen"), async (req, res)
       return res.status(400).json({ mensaje: "No se subió ninguna imagen" });
     }
 
+    const errores = validarDatosProducto(req.body);
+    if (errores.length > 0) {
+      // Si ya se subió la imagen a Cloudinary pero los datos son inválidos,
+      // la borramos para no dejar imágenes huérfanas.
+      await cloudinary.uploader.destroy(req.file.filename);
+      return res.status(400).json({ mensaje: errores.join(". ") });
+    }
+
     const nuevoProducto = new Producto({
       nombre: req.body.nombre,
       precio: Number(req.body.precio),
@@ -160,6 +225,14 @@ app.put("/productos/:id", verificarToken, upload.single("imagen"), async (req, r
 
     if (!producto) {
       return res.status(404).json({ mensaje: "Producto no encontrado" });
+    }
+
+    const errores = validarDatosProducto(req.body);
+    if (errores.length > 0) {
+      if (req.file) {
+        await cloudinary.uploader.destroy(req.file.filename);
+      }
+      return res.status(400).json({ mensaje: errores.join(". ") });
     }
 
     producto.nombre = req.body.nombre;
