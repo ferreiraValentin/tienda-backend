@@ -2,24 +2,106 @@ const API = "https://tienda-api-5ulq.onrender.com";
 
 const productoForm = document.getElementById("productoForm");
 const listaProductos = document.getElementById("listaProductos");
+const formTitulo = document.getElementById("formTitulo");
+const botonSubmit = document.getElementById("botonSubmit");
+const botonCancelar = document.getElementById("botonCancelar");
+const productoIdInput = document.getElementById("productoId");
+const imagenInput = document.getElementById("imagenInput");
+const imagenActualDiv = document.getElementById("imagenActual");
+const previewImagen = document.getElementById("previewImagen");
 
+let modoEdicion = false;
+
+// ==========================
+// Crear o actualizar producto
+// ==========================
 productoForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const formData = new FormData(productoForm);
+  const id = productoIdInput.value;
 
-  const res = await fetch(`${API}/productos`, {
-    method: "POST",
-    body: formData,
-  });
+  try {
+    let res;
 
-  const data = await res.json();
+    if (modoEdicion && id) {
+      // Actualizar producto existente
+      res = await fetch(`${API}/productos/${id}`, {
+        method: "PUT",
+        body: formData,
+      });
+    } else {
+      // Crear producto nuevo
+      if (!imagenInput.files[0]) {
+        alert("Tenés que seleccionar una imagen");
+        return;
+      }
+      res = await fetch(`${API}/productos`, {
+        method: "POST",
+        body: formData,
+      });
+    }
 
-  alert(data.mensaje);
-  productoForm.reset();
-  cargarProductos();
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.mensaje || "Ocurrió un error");
+      return;
+    }
+
+    alert(data.mensaje);
+    cancelarEdicion();
+    cargarProductos();
+  } catch (error) {
+    console.error(error);
+    alert("Error de conexión con el servidor");
+  }
 });
 
+// ==========================
+// Cargar datos de un producto en el formulario para editar
+// ==========================
+function editarProducto(producto) {
+  modoEdicion = true;
+
+  productoIdInput.value = producto._id;
+  document.getElementById("nombre").value = producto.nombre;
+  document.getElementById("precio").value = producto.precio;
+  document.getElementById("stock").value = producto.stock;
+  document.getElementById("categoria").value = producto.categoria;
+  document.getElementById("destacado").checked = producto.destacado;
+
+  // Ya no es obligatorio subir una imagen nueva al editar
+  imagenInput.removeAttribute("required");
+  imagenActualDiv.style.display = "block";
+  previewImagen.src = producto.imagen;
+
+  formTitulo.textContent = "Editar producto";
+  botonSubmit.textContent = "Actualizar producto";
+  botonCancelar.style.display = "inline-block";
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ==========================
+// Cancelar edición y volver al modo "Crear"
+// ==========================
+function cancelarEdicion() {
+  modoEdicion = false;
+  productoForm.reset();
+  productoIdInput.value = "";
+  imagenInput.setAttribute("required", "true");
+  imagenActualDiv.style.display = "none";
+  formTitulo.textContent = "Crear producto";
+  botonSubmit.textContent = "Crear producto";
+  botonCancelar.style.display = "none";
+}
+
+botonCancelar.addEventListener("click", cancelarEdicion);
+
+// ==========================
+// Cargar y listar productos
+// ==========================
 async function cargarProductos() {
   const res = await fetch(`${API}/productos`);
   const productos = await res.json();
@@ -27,20 +109,29 @@ async function cargarProductos() {
   listaProductos.innerHTML = "";
 
   productos.forEach((producto) => {
-    listaProductos.innerHTML += `
-      <div style="border:1px solid #ddd; padding:15px; margin:15px 0; border-radius:10px;">
-        <h3>${producto.nombre}</h3>
-        <p>$${producto.precio}</p>
-        <img src="${producto.imagen}" width="120">
-        <br><br>
-        <button onclick="eliminarProducto('${producto._id}')">
-          Eliminar
-        </button>
-      </div>
+    const div = document.createElement("div");
+    div.style = "border:1px solid #ddd; padding:15px; margin:15px 0; border-radius:10px;";
+
+    div.innerHTML = `
+      <h3>${producto.nombre}</h3>
+      <p>$${producto.precio} — Stock: ${producto.stock}</p>
+      <p>${producto.categoria} ${producto.destacado ? "⭐" : ""}</p>
+      <img src="${producto.imagen}" width="120">
+      <br><br>
+      <button class="btn-editar">Editar</button>
+      <button class="btn-eliminar">Eliminar</button>
     `;
+
+    div.querySelector(".btn-editar").addEventListener("click", () => editarProducto(producto));
+    div.querySelector(".btn-eliminar").addEventListener("click", () => eliminarProducto(producto._id));
+
+    listaProductos.appendChild(div);
   });
 }
 
+// ==========================
+// Eliminar producto
+// ==========================
 async function eliminarProducto(id) {
   const confirmar = confirm("¿Seguro que querés eliminar este producto?");
 

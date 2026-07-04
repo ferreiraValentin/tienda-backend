@@ -1,5 +1,8 @@
 require("dotenv").config();
 
+const dns = require("dns");
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
@@ -99,6 +102,44 @@ app.post("/productos", upload.single("imagen"), async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ mensaje: "Error al crear el producto" });
+  }
+});
+
+// Actualizar (editar) un producto existente
+app.put("/productos/:id", upload.single("imagen"), async (req, res) => {
+  try {
+    const producto = await Producto.findById(req.params.id);
+
+    if (!producto) {
+      return res.status(404).json({ mensaje: "Producto no encontrado" });
+    }
+
+    producto.nombre = req.body.nombre;
+    producto.precio = Number(req.body.precio);
+    producto.stock = Number(req.body.stock);
+    producto.categoria = req.body.categoria;
+    producto.destacado = req.body.destacado === "on";
+
+    // Si se subió una imagen nueva, reemplazamos la anterior en Cloudinary
+    if (req.file) {
+      const partesViejas = producto.imagen.split("/");
+      const nombreArchivoViejo = partesViejas[partesViejas.length - 1].split(".")[0];
+      const publicIdViejo = `tienda-productos/${nombreArchivoViejo}`;
+
+      await cloudinary.uploader.destroy(publicIdViejo);
+
+      producto.imagen = req.file.path;
+    }
+
+    await producto.save();
+
+    res.json({
+      mensaje: "Producto actualizado correctamente ✅",
+      producto,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al actualizar el producto" });
   }
 });
 

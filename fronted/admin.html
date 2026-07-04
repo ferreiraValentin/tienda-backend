@@ -10,33 +10,42 @@
   <h1>⚙️ Panel Administrador</h1>
 
   <section class="admin">
-    <h2>Crear producto</h2>
+    <h2 id="formTitulo">Crear producto</h2>
 
     <form id="productoForm">
-      <input type="text" name="nombre" placeholder="Nombre del producto" required>
+      <input type="hidden" name="id" id="productoId">
 
-      <input type="number" name="precio" placeholder="Precio" required>
+      <input type="text" name="nombre" id="nombre" placeholder="Nombre del producto" required>
 
-      <input type="number" name="stock" placeholder="Stock" min="0" required>
+      <input type="number" name="precio" id="precio" placeholder="Precio" required>
 
-      <select name="categoria" required>
-  <option value="">Seleccionar categoría</option>
-  <option value="Audio">Audio</option>
-  <option value="Cargadores">Cargadores</option>
-  <option value="Cables">Cables</option>
-  <option value="Accesorios">Accesorios</option>
-  <option value="Ofertas">Ofertas</option>
-  <option value="Hogar">Hogar</option>
-</select>
+      <input type="number" name="stock" id="stock" placeholder="Stock" min="0" required>
 
-<label>
-  <input type="checkbox" name="destacado">
-  ⭐ Producto destacado
-</label>
+      <select name="categoria" id="categoria" required>
+        <option value="">Seleccionar categoría</option>
+        <option value="Audio">Audio</option>
+        <option value="Cargadores">Cargadores</option>
+        <option value="Cables">Cables</option>
+        <option value="Accesorios">Accesorios</option>
+        <option value="Ofertas">Ofertas</option>
+        <option value="Hogar">Hogar</option>
+      </select>
 
-      <input type="file" name="imagen" required>
+      <label>
+        <input type="checkbox" name="destacado" id="destacado">
+        ⭐ Producto destacado
+      </label>
 
-      <button type="submit">Crear producto</button>
+      <div id="imagenActual" style="display:none; margin: 10px 0;">
+        <p style="margin-bottom:5px;">Imagen actual:</p>
+        <img id="previewImagen" src="" width="100" style="border-radius:8px;">
+        <p style="font-size:0.85em; color:#888;">Si no seleccionás una imagen nueva, se mantiene la actual.</p>
+      </div>
+
+      <input type="file" name="imagen" id="imagenInput">
+
+      <button type="submit" id="botonSubmit">Crear producto</button>
+      <button type="button" id="botonCancelar" style="display:none;">Cancelar edición</button>
     </form>
 
     <hr>
