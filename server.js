@@ -15,6 +15,11 @@ const rateLimit = require("express-rate-limit");
 
 const app = express();
 
+// Necesario porque Render (y la mayoría de los hosting en la nube) ponen
+// la app detrás de un proxy. Sin esto, express-rate-limit no puede
+// identificar correctamente la IP de cada request.
+app.set("trust proxy", 1);
+
 app.use(cors());
 app.use(express.json());
 
