@@ -4,6 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tienda Premium</title>
+
+  <!-- Vista previa al compartir en WhatsApp, Instagram, Facebook, etc. -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tiendapremium.vercel.app">
+  <meta property="og:title" content="Tienda Premium — Tecnología y accesorios">
+  <meta property="og:description" content="Los mejores productos al mejor precio. Audio, cargadores, cables, accesorios y más, con envíos a todo el país.">
+  <meta property="og:image" content="https://tiendapremium.vercel.app/imagen/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="es_AR">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Tienda Premium — Tecnología y accesorios">
+  <meta name="twitter:description" content="Los mejores productos al mejor precio. Audio, cargadores, cables, accesorios y más, con envíos a todo el país.">
+  <meta name="twitter:image" content="https://tiendapremium.vercel.app/imagen/og-image.png">
+
+  <meta name="description" content="Tienda Premium: tecnología y accesorios al mejor precio. Audio, cargadores, cables, accesorios y más, con envíos a todo el país.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -66,19 +88,19 @@
 
   <section class="categorias">
 
-    <button onclick="filtrarCategoria('Todos')">Todos</button>
+    <button class="activa" onclick="filtrarCategoria('Todos', this)">Todos</button>
 
-    <button onclick="filtrarCategoria('Audio')">Audio</button>
+    <button onclick="filtrarCategoria('Audio', this)">Audio</button>
 
-    <button onclick="filtrarCategoria('Cargadores')">Cargadores</button>
+    <button onclick="filtrarCategoria('Cargadores', this)">Cargadores</button>
 
-    <button onclick="filtrarCategoria('Cables')">Cables</button>
+    <button onclick="filtrarCategoria('Cables', this)">Cables</button>
 
-    <button onclick="filtrarCategoria('Accesorios')">Accesorios</button>
+    <button onclick="filtrarCategoria('Accesorios', this)">Accesorios</button>
 
-    <button onclick="filtrarCategoria('Ofertas')">Ofertas</button>
+    <button onclick="filtrarCategoria('Ofertas', this)">Ofertas</button>
 
-    <button onclick="filtrarCategoria('Hogar')">Hogar</button>
+    <button onclick="filtrarCategoria('Hogar', this)">Hogar</button>
 
   </section>
 
