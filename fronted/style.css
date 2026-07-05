@@ -423,6 +423,18 @@ button:disabled {
   font-family: var(--font-body);
 }
 
+.pocas-unidades {
+  display: inline-block;
+  background: rgba(255, 47, 77, 0.12);
+  border: 1px solid rgba(255, 47, 77, 0.35);
+  color: var(--red-soft);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin: 0 0 8px;
+}
+
 .oferta-tag {
   position: absolute;
   top: 10px;

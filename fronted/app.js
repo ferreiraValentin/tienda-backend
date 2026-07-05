@@ -67,6 +67,12 @@ function renderizarProductos(productos) {
         ${stock > 0 ? `📦 Stock: ${stock}` : "❌ Sin stock"}
       </p>
 
+      ${
+        stock > 0 && stock <= 3
+          ? `<p class="pocas-unidades">⚡ ¡Últimas ${stock} unidades!</p>`
+          : ""
+      }
+
       <p>$${formatearPrecio(prod.precio)}</p>
 
       ${

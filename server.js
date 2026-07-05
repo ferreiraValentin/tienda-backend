@@ -366,7 +366,33 @@ app.put("/pedidos/:id/estado", verificarToken, async (req, res) => {
       return res.status(404).json({ mensaje: "Pedido no encontrado" });
     }
 
+    const estadoAnterior = pedido.estado;
     pedido.estado = estado;
+
+    // Si el pedido pasa a "confirmado" por primera vez, descontamos stock
+    if (estadoAnterior !== "confirmado" && estado === "confirmado") {
+      for (const item of pedido.items) {
+        if (!item.productoId) continue;
+        const producto = await Producto.findById(item.productoId);
+        if (producto) {
+          producto.stock = Math.max(0, producto.stock - item.cantidad);
+          await producto.save();
+        }
+      }
+    }
+
+    // Si un pedido confirmado se revierte (a pendiente o cancelado), devolvemos el stock
+    if (estadoAnterior === "confirmado" && estado !== "confirmado") {
+      for (const item of pedido.items) {
+        if (!item.productoId) continue;
+        const producto = await Producto.findById(item.productoId);
+        if (producto) {
+          producto.stock = producto.stock + item.cantidad;
+          await producto.save();
+        }
+      }
+    }
+
     await pedido.save();
 
     res.json({ mensaje: "Estado actualizado ✅", pedido });
