@@ -65,6 +65,7 @@
         const data = await res.json();
 
         if (!res.ok) {
+          errorLogin.textContent = data.mensaje || "Usuario o contraseña incorrectos";
           errorLogin.style.display = "block";
           return;
         }
