@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pedidos - Panel Admin</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="admin-topbar">
+    <h1>⚙️ Panel Administrador</h1>
+    <nav class="admin-nav">
+      <a href="admin.html">Productos</a>
+      <a href="pedidos.html" class="activa">Pedidos</a>
+    </nav>
+    <button id="botonLogout">Cerrar sesión</button>
+  </div>
+
+  <section class="admin lista-admin">
+    <h2>📦 Historial de pedidos</h2>
+    <div id="listaPedidos"></div>
+  </section>
+
+  <script src="pedidos.js"></script>
+
+</body>
+</html>

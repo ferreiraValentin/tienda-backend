@@ -72,6 +72,35 @@ const productoSchema = new mongoose.Schema({
 
 const Producto = mongoose.model("Producto", productoSchema);
 
+// ==========================
+// Modelo de Pedido
+// ==========================
+const pedidoSchema = new mongoose.Schema({
+  cliente: {
+    nombre: { type: String, required: true },
+    ciudad: { type: String, required: true },
+    provincia: { type: String, required: true },
+    codigoPostal: { type: String, required: true },
+  },
+  items: [
+    {
+      productoId: { type: String },
+      nombre: { type: String, required: true },
+      precio: { type: Number, required: true },
+      cantidad: { type: Number, required: true },
+    },
+  ],
+  total: { type: Number, required: true },
+  estado: {
+    type: String,
+    enum: ["pendiente", "confirmado", "cancelado"],
+    default: "pendiente",
+  },
+  creadoEn: { type: Date, default: Date.now },
+});
+
+const Pedido = mongoose.model("Pedido", pedidoSchema);
+
 // Valida los datos del body antes de crear/editar un producto.
 // Devuelve un array de errores (vacío si todo está bien).
 function validarDatosProducto(body) {
@@ -285,6 +314,65 @@ app.delete("/productos/:id", verificarToken, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ mensaje: "Error al eliminar el producto" });
+  }
+});
+
+// ==========================
+// Pedidos
+// ==========================
+
+// Crear un pedido nuevo (lo dispara el cliente al comprar por WhatsApp)
+app.post("/pedidos", async (req, res) => {
+  try {
+    const { cliente, items, total } = req.body;
+
+    if (!cliente || !items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ mensaje: "Datos de pedido incompletos" });
+    }
+
+    const nuevoPedido = new Pedido({ cliente, items, total });
+    await nuevoPedido.save();
+
+    res.json({ mensaje: "Pedido registrado ✅", pedido: nuevoPedido });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al registrar el pedido" });
+  }
+});
+
+// Listar todos los pedidos (solo admin)
+app.get("/pedidos", verificarToken, async (req, res) => {
+  try {
+    const pedidos = await Pedido.find().sort({ creadoEn: -1 });
+    res.json(pedidos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al obtener los pedidos" });
+  }
+});
+
+// Cambiar el estado de un pedido (confirmar o cancelar)
+app.put("/pedidos/:id/estado", verificarToken, async (req, res) => {
+  try {
+    const { estado } = req.body;
+
+    if (!["pendiente", "confirmado", "cancelado"].includes(estado)) {
+      return res.status(400).json({ mensaje: "Estado inválido" });
+    }
+
+    const pedido = await Pedido.findById(req.params.id);
+
+    if (!pedido) {
+      return res.status(404).json({ mensaje: "Pedido no encontrado" });
+    }
+
+    pedido.estado = estado;
+    await pedido.save();
+
+    res.json({ mensaje: "Estado actualizado ✅", pedido });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al actualizar el pedido" });
   }
 });
 

@@ -684,6 +684,154 @@ button:disabled {
   color: var(--red-soft);
 }
 
+.admin-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-nav a {
+  text-decoration: none;
+  color: var(--text-muted);
+  font-family: var(--font-accent);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: 14px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  transition: .2s;
+}
+
+.admin-nav a:hover {
+  color: var(--text);
+}
+
+.admin-nav a.activa {
+  color: var(--blue-soft);
+  border-color: var(--blue);
+  box-shadow: 0 0 10px var(--blue-glow);
+}
+
+/* ==========================================================
+   PEDIDOS
+   ========================================================== */
+
+.pedido-card {
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  margin: 15px 0;
+}
+
+.pedido-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pedido-header strong {
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.pedido-fecha {
+  color: var(--text-faint);
+  font-size: 13px;
+  margin-left: 10px;
+}
+
+.estado-badge {
+  font-family: var(--font-accent);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+
+.estado-pendiente {
+  background: rgba(255, 210, 63, 0.15);
+  color: var(--gold);
+  border: 1px solid rgba(255, 210, 63, 0.4);
+}
+
+.estado-confirmado {
+  background: rgba(37, 211, 102, 0.15);
+  color: var(--green);
+  border: 1px solid rgba(37, 211, 102, 0.4);
+}
+
+.estado-cancelado {
+  background: rgba(255, 47, 77, 0.15);
+  color: var(--red-soft);
+  border: 1px solid rgba(255, 47, 77, 0.4);
+}
+
+.pedido-envio {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin: 10px 0;
+}
+
+.pedido-items {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.pedido-items li {
+  padding: 6px 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.pedido-total {
+  font-family: var(--font-accent);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--blue-soft);
+  margin: 10px 0;
+}
+
+.pedido-acciones {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pedido-acciones .btn-confirmar {
+  background: var(--green);
+  color: #08240f;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 9px 16px;
+  cursor: pointer;
+  font-family: var(--font-accent);
+  font-weight: 700;
+}
+
+.pedido-acciones .btn-cancelar-pedido {
+  background: transparent;
+  border: 1px solid var(--red);
+  color: var(--red-soft);
+  border-radius: var(--radius-sm);
+  padding: 9px 16px;
+  cursor: pointer;
+  font-family: var(--font-accent);
+  font-weight: 700;
+}
+
+.pedido-acciones .btn-cancelar-pedido:hover {
+  background: rgba(255, 47, 77, 0.1);
+}
+
 .check-destacado {
   color: var(--text-muted);
 }

@@ -240,16 +240,34 @@ function comprarWhatsApp() {
     return;
   }
 
+  const total = carrito.reduce(
+    (acc, p) => acc + p.precio * p.cantidad,
+    0
+  );
+
+  // Guardamos el pedido en el historial (no bloquea la compra si falla)
+  fetch(`${API_URL}/pedidos`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      cliente: { nombre, ciudad, provincia, codigoPostal: cp },
+      items: carrito.map(p => ({
+        productoId: p.id,
+        nombre: p.nombre,
+        precio: p.precio,
+        cantidad: p.cantidad,
+      })),
+      total,
+    }),
+  }).catch(error => {
+    console.error("No se pudo registrar el pedido en el historial:", error);
+  });
+
   let mensaje = "Hola, quiero comprar:\n\n";
 
   carrito.forEach(prod => {
     mensaje += `- ${prod.nombre} x${prod.cantidad} = $${formatearPrecio(prod.precio * prod.cantidad)}\n`;
   });
-
-  const total = carrito.reduce(
-    (acc, p) => acc + p.precio * p.cantidad,
-    0
-  );
 
   mensaje += `
 
