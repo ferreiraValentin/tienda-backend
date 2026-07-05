@@ -11,6 +11,7 @@ const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const rateLimit = require("express-rate-limit");
 
 const app = express();
 
@@ -148,6 +149,28 @@ const storage = new CloudinaryStorage({
 const upload = multer({ storage });
 
 // ==========================
+// Límites de intentos (protección contra fuerza bruta / spam)
+// ==========================
+
+// Login: máximo 5 intentos cada 15 minutos por IP
+const limiteLogin = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { mensaje: "Demasiados intentos de inicio de sesión. Probá de nuevo en unos minutos." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Pedidos: máximo 20 pedidos cada 15 minutos por IP (evita spam sin molestar clientes reales)
+const limitePedidos = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { mensaje: "Demasiadas solicitudes. Probá de nuevo en unos minutos." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// ==========================
 // Autenticación
 // ==========================
 
@@ -170,7 +193,7 @@ function verificarToken(req, res, next) {
 }
 
 // Login: valida usuario y contraseña, devuelve un token
-app.post("/login", async (req, res) => {
+app.post("/login", limiteLogin, async (req, res) => {
   try {
     const { usuario, password } = req.body;
 
@@ -322,7 +345,7 @@ app.delete("/productos/:id", verificarToken, async (req, res) => {
 // ==========================
 
 // Crear un pedido nuevo (lo dispara el cliente al comprar por WhatsApp)
-app.post("/pedidos", async (req, res) => {
+app.post("/pedidos", limitePedidos, async (req, res) => {
   try {
     const { cliente, items, total } = req.body;
 
