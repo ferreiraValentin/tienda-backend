@@ -502,6 +502,36 @@ app.put("/pedidos/:id/estado", verificarToken, async (req, res) => {
   }
 });
 
+// Eliminar un pedido (borra el registro; si estaba confirmado, devuelve el stock)
+app.delete("/pedidos/:id", verificarToken, async (req, res) => {
+  try {
+    const pedido = await Pedido.findById(req.params.id);
+
+    if (!pedido) {
+      return res.status(404).json({ mensaje: "Pedido no encontrado" });
+    }
+
+    // Si el pedido estaba confirmado, restauramos el stock antes de borrarlo
+    if (pedido.estado === "confirmado") {
+      for (const item of pedido.items) {
+        if (!item.productoId) continue;
+        const producto = await Producto.findById(item.productoId);
+        if (producto) {
+          producto.stock = producto.stock + item.cantidad;
+          await producto.save();
+        }
+      }
+    }
+
+    await Pedido.findByIdAndDelete(req.params.id);
+
+    res.json({ mensaje: "Pedido eliminado correctamente ✅" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al eliminar el pedido" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });

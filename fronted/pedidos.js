@@ -154,6 +154,7 @@ async function cargarPedidos() {
               ? `<button class="btn-cancelar-pedido">Cancelar pedido</button>`
               : ""
           }
+          <button class="btn-eliminar-pedido">Eliminar</button>
         </div>
       `;
 
@@ -166,6 +167,9 @@ async function cargarPedidos() {
       if (btnCancelar) {
         btnCancelar.addEventListener("click", () => cambiarEstado(pedido._id, "cancelado"));
       }
+
+      const btnEliminar = div.querySelector(".btn-eliminar-pedido");
+      btnEliminar.addEventListener("click", () => eliminarPedido(pedido._id));
 
       listaPedidos.appendChild(div);
     });
@@ -207,6 +211,33 @@ async function cambiarEstado(id, estado) {
   } catch (error) {
     console.error(error);
     alert("Error al actualizar el pedido");
+  }
+}
+
+async function eliminarPedido(id) {
+  const confirmar = confirm("¿Eliminar este pedido definitivamente? Esta acción no se puede deshacer.");
+
+  if (!confirmar) return;
+
+  try {
+    const res = await fetch(`${API}/pedidos/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (res.status === 401) {
+      localStorage.removeItem("adminToken");
+      window.location.href = "login.html";
+      return;
+    }
+
+    const data = await res.json();
+    alert(data.mensaje);
+    cargarMetricas();
+    cargarPedidos();
+  } catch (error) {
+    console.error(error);
+    alert("Error al eliminar el pedido");
   }
 }
 
