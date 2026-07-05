@@ -15,9 +15,72 @@ document.getElementById("botonLogout").addEventListener("click", () => {
 });
 
 const listaPedidos = document.getElementById("listaPedidos");
+const metricasDiv = document.getElementById("metricas");
 
 function formatearPrecio(numero) {
   return new Intl.NumberFormat("es-AR").format(numero);
+}
+
+async function cargarMetricas() {
+  try {
+    const res = await fetch(`${API}/pedidos/metricas`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (res.status === 401) {
+      localStorage.removeItem("adminToken");
+      window.location.href = "login.html";
+      return;
+    }
+
+    const data = await res.json();
+
+    const cantidadPendientes = data.porEstado.find(e => e.estado === "pendiente")?.cantidad || 0;
+    const cantidadConfirmados = data.porEstado.find(e => e.estado === "confirmado")?.cantidad || 0;
+    const cantidadCancelados = data.porEstado.find(e => e.estado === "cancelado")?.cantidad || 0;
+
+    const topProductosHTML = data.topProductos.length
+      ? data.topProductos
+          .map(
+            (p, i) =>
+              `<li><span>#${i + 1} ${p.nombre}</span><span>${p.unidades} unid. — $${formatearPrecio(p.ingresos)}</span></li>`
+          )
+          .join("")
+      : "<li>Todavía no hay ventas confirmadas.</li>";
+
+    metricasDiv.innerHTML = `
+      <div class="metricas-grid">
+        <div class="metrica-card">
+          <span class="metrica-label">Total vendido</span>
+          <span class="metrica-valor">$${formatearPrecio(data.totalVendido)}</span>
+        </div>
+        <div class="metrica-card">
+          <span class="metrica-label">Vendido este mes</span>
+          <span class="metrica-valor">$${formatearPrecio(data.totalVendidoMes)}</span>
+        </div>
+        <div class="metrica-card">
+          <span class="metrica-label">Pedidos confirmados</span>
+          <span class="metrica-valor">${cantidadConfirmados}</span>
+        </div>
+        <div class="metrica-card">
+          <span class="metrica-label">Pedidos pendientes</span>
+          <span class="metrica-valor metrica-pendiente">${cantidadPendientes}</span>
+        </div>
+        <div class="metrica-card">
+          <span class="metrica-label">Pedidos cancelados</span>
+          <span class="metrica-valor metrica-cancelado">${cantidadCancelados}</span>
+        </div>
+      </div>
+
+      <div class="top-productos">
+        <h3>🏆 Productos más vendidos</h3>
+        <ul>${topProductosHTML}</ul>
+      </div>
+    `;
+  } catch (error) {
+    console.error(error);
+    metricasDiv.innerHTML = "<p style='color:var(--red-soft)'>Error al cargar las métricas.</p>";
+  }
 }
 
 function formatearFecha(fechaISO) {
@@ -139,6 +202,7 @@ async function cambiarEstado(id, estado) {
 
     const data = await res.json();
     alert(data.mensaje);
+    cargarMetricas();
     cargarPedidos();
   } catch (error) {
     console.error(error);
@@ -146,4 +210,5 @@ async function cambiarEstado(id, estado) {
   }
 }
 
+cargarMetricas();
 cargarPedidos();

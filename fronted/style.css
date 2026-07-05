@@ -726,6 +726,82 @@ button:disabled {
 }
 
 /* ==========================================================
+   MÉTRICAS
+   ========================================================== */
+
+.metricas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.metrica-card {
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.metrica-label {
+  color: var(--text-muted);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metrica-valor {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  color: var(--blue-soft);
+}
+
+.metrica-pendiente {
+  color: var(--gold);
+}
+
+.metrica-cancelado {
+  color: var(--red-soft);
+}
+
+.top-productos {
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+}
+
+.top-productos h3 {
+  margin-top: 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 1px;
+  color: var(--blue-soft);
+}
+
+.top-productos ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.top-productos li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.top-productos li:last-child {
+  border-bottom: none;
+}
+
+/* ==========================================================
    PEDIDOS
    ========================================================== */
 

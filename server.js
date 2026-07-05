@@ -379,6 +379,59 @@ app.get("/pedidos", verificarToken, async (req, res) => {
   }
 });
 
+// Métricas de ventas para el dashboard del admin
+app.get("/pedidos/metricas", verificarToken, async (req, res) => {
+  try {
+    const inicioMes = new Date();
+    inicioMes.setDate(1);
+    inicioMes.setHours(0, 0, 0, 0);
+
+    const [totalGeneral] = await Pedido.aggregate([
+      { $match: { estado: "confirmado" } },
+      { $group: { _id: null, total: { $sum: "$total" }, cantidad: { $sum: 1 } } },
+    ]);
+
+    const [totalMes] = await Pedido.aggregate([
+      { $match: { estado: "confirmado", creadoEn: { $gte: inicioMes } } },
+      { $group: { _id: null, total: { $sum: "$total" }, cantidad: { $sum: 1 } } },
+    ]);
+
+    const porEstado = await Pedido.aggregate([
+      { $group: { _id: "$estado", cantidad: { $sum: 1 } } },
+    ]);
+
+    const topProductos = await Pedido.aggregate([
+      { $match: { estado: "confirmado" } },
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id: "$items.nombre",
+          unidades: { $sum: "$items.cantidad" },
+          ingresos: { $sum: { $multiply: ["$items.precio", "$items.cantidad"] } },
+        },
+      },
+      { $sort: { unidades: -1 } },
+      { $limit: 5 },
+    ]);
+
+    res.json({
+      totalVendido: totalGeneral?.total || 0,
+      pedidosConfirmados: totalGeneral?.cantidad || 0,
+      totalVendidoMes: totalMes?.total || 0,
+      pedidosConfirmadosMes: totalMes?.cantidad || 0,
+      porEstado: porEstado.map((e) => ({ estado: e._id, cantidad: e.cantidad })),
+      topProductos: topProductos.map((p) => ({
+        nombre: p._id,
+        unidades: p.unidades,
+        ingresos: p.ingresos,
+      })),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al calcular métricas" });
+  }
+});
+
 // Cambiar el estado de un pedido (confirmar o cancelar)
 app.put("/pedidos/:id/estado", verificarToken, async (req, res) => {
   try {
