@@ -20,7 +20,26 @@ const app = express();
 // identificar correctamente la IP de cada request.
 app.set("trust proxy", 1);
 
-app.use(cors());
+// ==========================
+// CORS restringido: solo estos orígenes pueden llamar a la API
+// ==========================
+const origenesPermitidos = [
+  "https://tiendapremium.vercel.app",
+  "http://127.0.0.1:5500", // Live Server, para pruebas locales
+  "http://localhost:5500",
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Sin "origin" (ej: Postman, apps móviles, curl) lo dejamos pasar
+      if (!origin || origenesPermitidos.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("No permitido por CORS"));
+    },
+  })
+);
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
