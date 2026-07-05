@@ -34,6 +34,10 @@ function optimizarImagen(url, ancho = 200) {
   return url.replace("/upload/", `/upload/f_auto,q_auto,w_${ancho}/`);
 }
 
+function formatearPrecio(numero) {
+  return new Intl.NumberFormat("es-AR").format(numero);
+}
+
 // ==========================
 // Crear o actualizar producto
 // ==========================
@@ -147,7 +151,7 @@ async function cargarProductos() {
       <img src="${optimizarImagen(producto.imagen, 200)}" width="90" loading="lazy">
       <div class="producto-admin-info">
         <h3>${producto.nombre}</h3>
-        <p>$${producto.precio} — Stock: ${producto.stock}</p>
+        <p>$${formatearPrecio(producto.precio)} — Stock: ${producto.stock}</p>
         <p class="producto-admin-cat">${producto.categoria} ${producto.destacado ? "⭐" : ""}</p>
       </div>
       <div class="producto-admin-acciones">

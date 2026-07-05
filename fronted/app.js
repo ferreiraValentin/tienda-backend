@@ -13,6 +13,13 @@ cargarProductos();
 mostrarCarrito();
 
 // ==========================
+// Formateo de precios ($15.000 en vez de $15000)
+// ==========================
+function formatearPrecio(numero) {
+  return new Intl.NumberFormat("es-AR").format(numero);
+}
+
+// ==========================
 // Optimización de imágenes con Cloudinary
 // ==========================
 // Inserta transformaciones en la URL de Cloudinary para servir la imagen
@@ -60,7 +67,7 @@ function renderizarProductos(productos) {
         ${stock > 0 ? `📦 Stock: ${stock}` : "❌ Sin stock"}
       </p>
 
-      <p>$${prod.precio}</p>
+      <p>$${formatearPrecio(prod.precio)}</p>
 
       ${
         stock > 0
@@ -166,8 +173,8 @@ function mostrarCarrito() {
     const li = document.createElement("li");
 
     li.innerHTML = `
-      ${prod.nombre} - $${prod.precio}
-      x ${prod.cantidad} = $${subtotal}
+      ${prod.nombre} - $${formatearPrecio(prod.precio)}
+      x ${prod.cantidad} = $${formatearPrecio(subtotal)}
       <button onclick="sumarCantidad(${index})">+</button>
       <button onclick="restarCantidad(${index})">-</button>
       <button onclick="eliminarProducto(${index})">❌</button>
@@ -177,7 +184,7 @@ function mostrarCarrito() {
     total += subtotal;
   });
 
-  totalHTML.textContent = total;
+  totalHTML.textContent = formatearPrecio(total);
 }
 
 function sumarCantidad(index) {
@@ -236,7 +243,7 @@ function comprarWhatsApp() {
   let mensaje = "Hola, quiero comprar:\n\n";
 
   carrito.forEach(prod => {
-    mensaje += `- ${prod.nombre} x${prod.cantidad} = $${prod.precio * prod.cantidad}\n`;
+    mensaje += `- ${prod.nombre} x${prod.cantidad} = $${formatearPrecio(prod.precio * prod.cantidad)}\n`;
   });
 
   const total = carrito.reduce(
@@ -253,7 +260,7 @@ Ciudad: ${ciudad}
 Provincia: ${provincia}
 Código Postal: ${cp}
 
-Total: $${total}
+Total: $${formatearPrecio(total)}
 `;
 
   const numero = "5491156461555";
