@@ -22,6 +22,23 @@
   </div>
 
   <section class="admin lista-admin">
+    <h2>➕ Registrar venta manual</h2>
+    <p class="nota-venta-manual">Usalo cuando vendas algo fuera de la tienda (en persona, otro canal) y quieras descontar el stock igual.</p>
+
+    <form id="ventaManualForm" class="venta-manual-form">
+      <select id="productoManual" required>
+        <option value="">Seleccionar producto...</option>
+      </select>
+
+      <input type="number" id="cantidadManual" placeholder="Cantidad" min="1" value="1" required>
+
+      <input type="text" id="notaManual" placeholder="Nota (opcional, ej: venta a Juan)">
+
+      <button type="submit">Registrar venta</button>
+    </form>
+  </section>
+
+  <section class="admin lista-admin">
     <h2>📊 Métricas de ventas</h2>
     <div id="metricas"></div>
   </section>

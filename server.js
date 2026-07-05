@@ -103,9 +103,9 @@ const Producto = mongoose.model("Producto", productoSchema);
 const pedidoSchema = new mongoose.Schema({
   cliente: {
     nombre: { type: String, required: true },
-    ciudad: { type: String, required: true },
-    provincia: { type: String, required: true },
-    codigoPostal: { type: String, required: true },
+    ciudad: { type: String, default: "-" },
+    provincia: { type: String, default: "-" },
+    codigoPostal: { type: String, default: "-" },
   },
   items: [
     {
@@ -125,6 +125,30 @@ const pedidoSchema = new mongoose.Schema({
 });
 
 const Pedido = mongoose.model("Pedido", pedidoSchema);
+
+// Descuenta del stock las cantidades de cada item (usado al confirmar un pedido)
+async function descontarStock(items) {
+  for (const item of items) {
+    if (!item.productoId) continue;
+    const producto = await Producto.findById(item.productoId);
+    if (producto) {
+      producto.stock = Math.max(0, producto.stock - item.cantidad);
+      await producto.save();
+    }
+  }
+}
+
+// Devuelve al stock las cantidades de cada item (usado al revertir/borrar un pedido confirmado)
+async function restaurarStock(items) {
+  for (const item of items) {
+    if (!item.productoId) continue;
+    const producto = await Producto.findById(item.productoId);
+    if (producto) {
+      producto.stock = producto.stock + item.cantidad;
+      await producto.save();
+    }
+  }
+}
 
 // Valida los datos del body antes de crear/editar un producto.
 // Devuelve un array de errores (vacío si todo está bien).
@@ -387,6 +411,52 @@ app.post("/pedidos", limitePedidos, async (req, res) => {
   }
 });
 
+// Registrar una venta manual (ej: vendida en persona o por otro canal)
+// Se crea directamente como "confirmado" y descuenta stock al instante.
+app.post("/pedidos/manual", verificarToken, async (req, res) => {
+  try {
+    const { productoId, cantidad, nota } = req.body;
+
+    const cantidadNum = Number(cantidad);
+    if (!productoId || !Number.isInteger(cantidadNum) || cantidadNum <= 0) {
+      return res.status(400).json({ mensaje: "Datos inválidos" });
+    }
+
+    const producto = await Producto.findById(productoId);
+    if (!producto) {
+      return res.status(404).json({ mensaje: "Producto no encontrado" });
+    }
+
+    if (producto.stock < cantidadNum) {
+      return res.status(400).json({ mensaje: `Stock insuficiente (disponible: ${producto.stock})` });
+    }
+
+    const nuevoPedido = new Pedido({
+      cliente: {
+        nombre: nota && nota.trim() ? nota.trim() : "Venta manual",
+      },
+      items: [
+        {
+          productoId: producto._id.toString(),
+          nombre: producto.nombre,
+          precio: producto.precio,
+          cantidad: cantidadNum,
+        },
+      ],
+      total: producto.precio * cantidadNum,
+      estado: "confirmado",
+    });
+
+    await nuevoPedido.save();
+    await descontarStock(nuevoPedido.items);
+
+    res.json({ mensaje: "Venta manual registrada ✅", pedido: nuevoPedido });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al registrar la venta manual" });
+  }
+});
+
 // Listar todos los pedidos (solo admin)
 app.get("/pedidos", verificarToken, async (req, res) => {
   try {
@@ -471,26 +541,12 @@ app.put("/pedidos/:id/estado", verificarToken, async (req, res) => {
 
     // Si el pedido pasa a "confirmado" por primera vez, descontamos stock
     if (estadoAnterior !== "confirmado" && estado === "confirmado") {
-      for (const item of pedido.items) {
-        if (!item.productoId) continue;
-        const producto = await Producto.findById(item.productoId);
-        if (producto) {
-          producto.stock = Math.max(0, producto.stock - item.cantidad);
-          await producto.save();
-        }
-      }
+      await descontarStock(pedido.items);
     }
 
     // Si un pedido confirmado se revierte (a pendiente o cancelado), devolvemos el stock
     if (estadoAnterior === "confirmado" && estado !== "confirmado") {
-      for (const item of pedido.items) {
-        if (!item.productoId) continue;
-        const producto = await Producto.findById(item.productoId);
-        if (producto) {
-          producto.stock = producto.stock + item.cantidad;
-          await producto.save();
-        }
-      }
+      await restaurarStock(pedido.items);
     }
 
     await pedido.save();
@@ -513,14 +569,7 @@ app.delete("/pedidos/:id", verificarToken, async (req, res) => {
 
     // Si el pedido estaba confirmado, restauramos el stock antes de borrarlo
     if (pedido.estado === "confirmado") {
-      for (const item of pedido.items) {
-        if (!item.productoId) continue;
-        const producto = await Producto.findById(item.productoId);
-        if (producto) {
-          producto.stock = producto.stock + item.cantidad;
-          await producto.save();
-        }
-      }
+      await restaurarStock(pedido.items);
     }
 
     await Pedido.findByIdAndDelete(req.params.id);

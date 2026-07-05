@@ -16,10 +16,80 @@ document.getElementById("botonLogout").addEventListener("click", () => {
 
 const listaPedidos = document.getElementById("listaPedidos");
 const metricasDiv = document.getElementById("metricas");
+const ventaManualForm = document.getElementById("ventaManualForm");
+const productoManualSelect = document.getElementById("productoManual");
 
 function formatearPrecio(numero) {
   return new Intl.NumberFormat("es-AR").format(numero);
 }
+
+// ==========================
+// Venta manual
+// ==========================
+async function cargarProductosParaVentaManual() {
+  try {
+    const res = await fetch(`${API}/productos`);
+    const productos = await res.json();
+
+    productoManualSelect.innerHTML = '<option value="">Seleccionar producto...</option>';
+
+    productos.forEach((producto) => {
+      const option = document.createElement("option");
+      option.value = producto._id;
+      option.textContent = `${producto.nombre} — $${formatearPrecio(producto.precio)} (stock: ${producto.stock})`;
+      option.disabled = producto.stock <= 0;
+      productoManualSelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error("Error al cargar productos para venta manual:", error);
+  }
+}
+
+ventaManualForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const productoId = productoManualSelect.value;
+  const cantidad = document.getElementById("cantidadManual").value;
+  const nota = document.getElementById("notaManual").value;
+
+  if (!productoId) {
+    alert("Elegí un producto");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/pedidos/manual`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ productoId, cantidad, nota }),
+    });
+
+    if (res.status === 401) {
+      localStorage.removeItem("adminToken");
+      window.location.href = "login.html";
+      return;
+    }
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.mensaje || "Error al registrar la venta");
+      return;
+    }
+
+    alert(data.mensaje);
+    ventaManualForm.reset();
+    cargarProductosParaVentaManual();
+    cargarMetricas();
+    cargarPedidos();
+  } catch (error) {
+    console.error(error);
+    alert("Error de conexión al registrar la venta");
+  }
+});
 
 async function cargarMetricas() {
   try {
@@ -241,5 +311,6 @@ async function eliminarPedido(id) {
   }
 }
 
+cargarProductosParaVentaManual();
 cargarMetricas();
 cargarPedidos();
