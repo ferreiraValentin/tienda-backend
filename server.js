@@ -92,6 +92,8 @@ const productoSchema = new mongoose.Schema({
   },
   destacado: { type: Boolean, default: false },
   imagen: { type: String, required: true },
+  imagenesAdicionales: { type: [String], default: [] },
+  descripcion: { type: String, default: "", maxlength: 1000 },
   creadoEn: { type: Date, default: Date.now },
 });
 
@@ -196,6 +198,12 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
+// Config para recibir la imagen principal + hasta 4 imágenes adicionales
+const uploadProducto = upload.fields([
+  { name: "imagen", maxCount: 1 },
+  { name: "imagenesAdicionales", maxCount: 4 },
+]);
+
 // ==========================
 // Límites de intentos (protección contra fuerza bruta / spam)
 // ==========================
@@ -283,17 +291,23 @@ app.get("/productos", async (req, res) => {
 });
 
 // Crear un producto nuevo
-app.post("/productos", verificarToken, upload.single("imagen"), async (req, res) => {
+app.post("/productos", verificarToken, uploadProducto, async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ mensaje: "No se subió ninguna imagen" });
+    const archivoPrincipal = req.files?.imagen?.[0];
+    const archivosAdicionales = req.files?.imagenesAdicionales || [];
+
+    if (!archivoPrincipal) {
+      return res.status(400).json({ mensaje: "No se subió ninguna imagen principal" });
     }
 
     const errores = validarDatosProducto(req.body);
     if (errores.length > 0) {
-      // Si ya se subió la imagen a Cloudinary pero los datos son inválidos,
-      // la borramos para no dejar imágenes huérfanas.
-      await cloudinary.uploader.destroy(req.file.filename);
+      // Si ya se subieron imágenes a Cloudinary pero los datos son inválidos,
+      // las borramos para no dejar imágenes huérfanas.
+      await cloudinary.uploader.destroy(archivoPrincipal.filename);
+      for (const archivo of archivosAdicionales) {
+        await cloudinary.uploader.destroy(archivo.filename);
+      }
       return res.status(400).json({ mensaje: errores.join(". ") });
     }
 
@@ -303,7 +317,9 @@ app.post("/productos", verificarToken, upload.single("imagen"), async (req, res)
       stock: Number(req.body.stock),
       categoria: req.body.categoria,
       destacado: req.body.destacado === "on",
-      imagen: req.file.path, // Cloudinary devuelve la URL directa acá
+      imagen: archivoPrincipal.path, // Cloudinary devuelve la URL directa acá
+      imagenesAdicionales: archivosAdicionales.map((archivo) => archivo.path),
+      descripcion: (req.body.descripcion || "").trim(),
     });
 
     await nuevoProducto.save();
@@ -319,7 +335,7 @@ app.post("/productos", verificarToken, upload.single("imagen"), async (req, res)
 });
 
 // Actualizar (editar) un producto existente
-app.put("/productos/:id", verificarToken, upload.single("imagen"), async (req, res) => {
+app.put("/productos/:id", verificarToken, uploadProducto, async (req, res) => {
   try {
     const producto = await Producto.findById(req.params.id);
 
@@ -327,10 +343,16 @@ app.put("/productos/:id", verificarToken, upload.single("imagen"), async (req, r
       return res.status(404).json({ mensaje: "Producto no encontrado" });
     }
 
+    const archivoPrincipal = req.files?.imagen?.[0];
+    const archivosAdicionales = req.files?.imagenesAdicionales || [];
+
     const errores = validarDatosProducto(req.body);
     if (errores.length > 0) {
-      if (req.file) {
-        await cloudinary.uploader.destroy(req.file.filename);
+      if (archivoPrincipal) {
+        await cloudinary.uploader.destroy(archivoPrincipal.filename);
+      }
+      for (const archivo of archivosAdicionales) {
+        await cloudinary.uploader.destroy(archivo.filename);
       }
       return res.status(400).json({ mensaje: errores.join(". ") });
     }
@@ -340,16 +362,25 @@ app.put("/productos/:id", verificarToken, upload.single("imagen"), async (req, r
     producto.stock = Number(req.body.stock);
     producto.categoria = req.body.categoria;
     producto.destacado = req.body.destacado === "on";
+    producto.descripcion = (req.body.descripcion || "").trim();
 
-    // Si se subió una imagen nueva, reemplazamos la anterior en Cloudinary
-    if (req.file) {
+    // Si se subió una imagen principal nueva, reemplazamos la anterior en Cloudinary
+    if (archivoPrincipal) {
       const partesViejas = producto.imagen.split("/");
       const nombreArchivoViejo = partesViejas[partesViejas.length - 1].split(".")[0];
-      const publicIdViejo = `tienda-productos/${nombreArchivoViejo}`;
+      await cloudinary.uploader.destroy(`tienda-productos/${nombreArchivoViejo}`);
 
-      await cloudinary.uploader.destroy(publicIdViejo);
+      producto.imagen = archivoPrincipal.path;
+    }
 
-      producto.imagen = req.file.path;
+    // Si se subieron imágenes adicionales nuevas, reemplazamos TODO el set anterior
+    if (archivosAdicionales.length > 0) {
+      for (const url of producto.imagenesAdicionales) {
+        const partes = url.split("/");
+        const nombreArchivo = partes[partes.length - 1].split(".")[0];
+        await cloudinary.uploader.destroy(`tienda-productos/${nombreArchivo}`);
+      }
+      producto.imagenesAdicionales = archivosAdicionales.map((archivo) => archivo.path);
     }
 
     await producto.save();
@@ -379,6 +410,13 @@ app.delete("/productos/:id", verificarToken, async (req, res) => {
     const publicId = `tienda-productos/${nombreArchivo}`;
 
     await cloudinary.uploader.destroy(publicId);
+
+    for (const url of producto.imagenesAdicionales) {
+      const partesAd = url.split("/");
+      const nombreArchivoAd = partesAd[partesAd.length - 1].split(".")[0];
+      await cloudinary.uploader.destroy(`tienda-productos/${nombreArchivoAd}`);
+    }
+
     await Producto.findByIdAndDelete(req.params.id);
 
     res.json({ mensaje: "Producto eliminado correctamente ✅" });

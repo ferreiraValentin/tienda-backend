@@ -604,6 +604,47 @@ button:disabled {
   align-items: center;
 }
 
+.admin textarea {
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-panel-alt);
+  color: var(--text);
+  font-family: var(--font-body);
+  width: 100%;
+  resize: vertical;
+}
+
+.admin textarea::placeholder {
+  color: var(--text-faint);
+}
+
+.etiqueta-campo {
+  display: block;
+  width: 100%;
+  color: var(--text-muted);
+  font-size: 13px;
+  margin: 4px 0 -8px;
+}
+
+.miniaturas-adicionales {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 6px 0;
+}
+
+.miniaturas-adicionales img {
+  border-radius: var(--radius-sm);
+  background: var(--bg-tile);
+  padding: 3px;
+}
+
+.producto-admin-galeria {
+  color: var(--text-faint) !important;
+  font-size: 12px !important;
+}
+
 .admin input,
 .admin select {
   padding: 10px;
@@ -642,6 +683,192 @@ button:disabled {
 
 .admin button:hover {
   box-shadow: 0 0 16px var(--blue-glow);
+}
+
+/* ==========================================================
+   MODAL DE DETALLE DE PRODUCTO
+   ========================================================== */
+
+.oculto {
+  display: none !important;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.modal-contenido {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6), 0 0 30px var(--blue-glow);
+}
+
+.modal-cerrar {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  z-index: 3;
+  transition: .2s;
+}
+
+.modal-cerrar:hover {
+  border-color: var(--red);
+  color: var(--red-soft);
+}
+
+.modal-galeria {
+  position: relative;
+  background: var(--bg-tile);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 320px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  overflow: hidden;
+}
+
+.modal-galeria img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.galeria-flecha {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: .2s;
+}
+
+.galeria-flecha:hover {
+  background: rgba(0,0,0,0.8);
+}
+
+.galeria-prev {
+  left: 12px;
+}
+
+.galeria-next {
+  right: 12px;
+}
+
+.modal-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 0 0;
+}
+
+.modal-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-strong);
+  cursor: pointer;
+  transition: .2s;
+}
+
+.modal-dot.activo {
+  background: var(--blue);
+  box-shadow: 0 0 8px var(--blue-glow);
+}
+
+.modal-info {
+  padding: 20px 24px 24px;
+  text-align: center;
+}
+
+.modal-info h2 {
+  margin: 10px 0 6px;
+  font-family: var(--font-body);
+  font-size: 1.3rem;
+  color: var(--text);
+}
+
+.modal-descripcion {
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 10px 0;
+  text-align: left;
+}
+
+.modal-precio {
+  font-family: var(--font-accent);
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--blue-soft);
+  margin: 8px 0 16px;
+}
+
+.modal-info button {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--blue), #1a5fc7);
+  color: white;
+  font-family: var(--font-accent);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: .25s;
+}
+
+.modal-info button:hover:not(:disabled) {
+  box-shadow: 0 0 16px var(--blue-glow);
+}
+
+.producto-nombre-clickeable {
+  cursor: pointer;
+  transition: .2s;
+}
+
+.producto-nombre-clickeable:hover {
+  color: var(--blue-soft);
+}
+
+.imagen-producto {
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .modal-galeria {
+    height: 240px;
+  }
 }
 
 /* ==========================================================

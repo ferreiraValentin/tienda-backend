@@ -23,6 +23,7 @@ const productoIdInput = document.getElementById("productoId");
 const imagenInput = document.getElementById("imagenInput");
 const imagenActualDiv = document.getElementById("imagenActual");
 const previewImagen = document.getElementById("previewImagen");
+const adicionalesActualesDiv = document.getElementById("adicionalesActuales");
 
 let modoEdicion = false;
 
@@ -105,11 +106,27 @@ function editarProducto(producto) {
   document.getElementById("stock").value = producto.stock;
   document.getElementById("categoria").value = producto.categoria;
   document.getElementById("destacado").checked = producto.destacado;
+  document.getElementById("descripcion").value = producto.descripcion || "";
 
   // Ya no es obligatorio subir una imagen nueva al editar
   imagenInput.removeAttribute("required");
   imagenActualDiv.style.display = "block";
   previewImagen.src = optimizarImagen(producto.imagen, 200);
+
+  if (producto.imagenesAdicionales && producto.imagenesAdicionales.length > 0) {
+    const miniaturas = producto.imagenesAdicionales
+      .map((url) => `<img src="${optimizarImagen(url, 100)}" width="60">`)
+      .join(" ");
+    adicionalesActualesDiv.innerHTML = `
+      <p>Imágenes adicionales actuales:</p>
+      <div class="miniaturas-adicionales">${miniaturas}</div>
+      <p class="nota-imagen">Si subís nuevas, reemplazan a todas estas.</p>
+    `;
+    adicionalesActualesDiv.style.display = "block";
+  } else {
+    adicionalesActualesDiv.innerHTML = "";
+    adicionalesActualesDiv.style.display = "none";
+  }
 
   formTitulo.textContent = "Editar producto";
   botonSubmit.textContent = "Actualizar producto";
@@ -127,6 +144,8 @@ function cancelarEdicion() {
   productoIdInput.value = "";
   imagenInput.setAttribute("required", "true");
   imagenActualDiv.style.display = "none";
+  adicionalesActualesDiv.innerHTML = "";
+  adicionalesActualesDiv.style.display = "none";
   formTitulo.textContent = "Crear producto";
   botonSubmit.textContent = "Crear producto";
   botonCancelar.style.display = "none";
@@ -153,6 +172,11 @@ async function cargarProductos() {
         <h3>${producto.nombre}</h3>
         <p>$${formatearPrecio(producto.precio)} — Stock: ${producto.stock}</p>
         <p class="producto-admin-cat">${producto.categoria} ${producto.destacado ? "⭐" : ""}</p>
+        ${
+          producto.imagenesAdicionales && producto.imagenesAdicionales.length > 0
+            ? `<p class="producto-admin-galeria">🖼️ +${producto.imagenesAdicionales.length} imágenes</p>`
+            : ""
+        }
       </div>
       <div class="producto-admin-acciones">
         <button class="btn-editar">Editar</button>

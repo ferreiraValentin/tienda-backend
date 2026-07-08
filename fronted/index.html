@@ -172,6 +172,29 @@
     >
   </a>
 
+  <div id="modalProducto" class="modal-overlay oculto" onclick="cerrarModalProducto()">
+    <div class="modal-contenido" onclick="event.stopPropagation()">
+      <button class="modal-cerrar" onclick="cerrarModalProducto()">✕</button>
+
+      <div class="modal-galeria">
+        <button class="galeria-flecha galeria-prev" onclick="cambiarImagenModal(-1)">‹</button>
+        <img id="modalImagenPrincipal" src="" alt="">
+        <button class="galeria-flecha galeria-next" onclick="cambiarImagenModal(1)">›</button>
+      </div>
+
+      <div class="modal-dots" id="modalDots"></div>
+
+      <div class="modal-info">
+        <span class="categoria-tag" id="modalCategoria"></span>
+        <h2 id="modalNombre"></h2>
+        <p class="modal-descripcion" id="modalDescripcion"></p>
+        <p class="stock" id="modalStock"></p>
+        <p class="modal-precio" id="modalPrecio"></p>
+        <button id="modalBotonAgregar"></button>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 
 </body>

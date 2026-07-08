@@ -42,7 +42,7 @@ function renderizarProductos(productos) {
     const imagenOptimizada = optimizarImagen(prod.imagen, 400);
 
     div.innerHTML = `
-      <div class="imagen-producto">
+      <div class="imagen-producto" onclick="abrirModalProducto('${prod._id}')">
 
   ${prod.destacado
     ? '<span class="destacado-tag">⭐ DESTACADO</span>'
@@ -61,7 +61,7 @@ function renderizarProductos(productos) {
         ${prod.categoria || "Sin categoría"}
       </span>
 
-      <h3>${prod.nombre}</h3>
+      <h3 class="producto-nombre-clickeable" onclick="abrirModalProducto('${prod._id}')">${prod.nombre}</h3>
 
       <p class="stock">
         ${stock > 0 ? `📦 Stock: ${stock}` : "❌ Sin stock"}
@@ -292,3 +292,108 @@ Total: $${formatearPrecio(total)}
 
   window.open(url, "_blank");
 }
+
+// ==========================
+// Modal de detalle de producto (galería + descripción)
+// ==========================
+const modalOverlay = document.getElementById("modalProducto");
+const modalImagenPrincipal = document.getElementById("modalImagenPrincipal");
+const modalDots = document.getElementById("modalDots");
+const modalCategoria = document.getElementById("modalCategoria");
+const modalNombre = document.getElementById("modalNombre");
+const modalDescripcion = document.getElementById("modalDescripcion");
+const modalStock = document.getElementById("modalStock");
+const modalPrecio = document.getElementById("modalPrecio");
+const modalBotonAgregar = document.getElementById("modalBotonAgregar");
+
+let productoModalActual = null;
+let imagenModalIndex = 0;
+
+function obtenerGaleria(producto) {
+  const galeria = [producto.imagen, ...(producto.imagenesAdicionales || [])];
+  return galeria.filter(Boolean);
+}
+
+function abrirModalProducto(id) {
+  const producto = productosGlobal.find(p => p._id === id);
+  if (!producto) return;
+
+  productoModalActual = producto;
+  imagenModalIndex = 0;
+  renderizarModal();
+
+  modalOverlay.classList.remove("oculto");
+}
+
+function cerrarModalProducto() {
+  modalOverlay.classList.add("oculto");
+  productoModalActual = null;
+}
+
+function cambiarImagenModal(delta) {
+  if (!productoModalActual) return;
+
+  const galeria = obtenerGaleria(productoModalActual);
+  imagenModalIndex = (imagenModalIndex + delta + galeria.length) % galeria.length;
+  renderizarModal();
+}
+
+function renderizarModal() {
+  if (!productoModalActual) return;
+
+  const producto = productoModalActual;
+  const galeria = obtenerGaleria(producto);
+  const stock = producto.stock ?? 0;
+
+  modalImagenPrincipal.src = optimizarImagen(galeria[imagenModalIndex], 700);
+  modalImagenPrincipal.alt = producto.nombre;
+
+  // Puntitos de navegación (solo si hay más de una imagen)
+  if (galeria.length > 1) {
+    modalDots.innerHTML = galeria
+      .map((_, i) => `<span class="modal-dot ${i === imagenModalIndex ? "activo" : ""}" onclick="irAImagenModal(${i})"></span>`)
+      .join("");
+    modalDots.style.display = "flex";
+  } else {
+    modalDots.innerHTML = "";
+    modalDots.style.display = "none";
+  }
+
+  document.querySelectorAll(".galeria-flecha").forEach(btn => {
+    btn.style.display = galeria.length > 1 ? "flex" : "none";
+  });
+
+  modalCategoria.textContent = producto.categoria || "Sin categoría";
+  modalNombre.textContent = producto.nombre;
+  modalDescripcion.textContent = producto.descripcion && producto.descripcion.trim()
+    ? producto.descripcion
+    : "Este producto todavía no tiene descripción cargada.";
+  modalStock.innerHTML = stock > 0 ? `📦 Stock: ${stock}` : "❌ Sin stock";
+  modalPrecio.textContent = `$${formatearPrecio(producto.precio)}`;
+
+  if (stock > 0) {
+    modalBotonAgregar.textContent = "Agregar al carrito";
+    modalBotonAgregar.disabled = false;
+    modalBotonAgregar.onclick = () => {
+      agregarCarrito(producto._id);
+      modalBotonAgregar.textContent = "¡Agregado! ✓";
+      setTimeout(() => {
+        if (modalBotonAgregar) modalBotonAgregar.textContent = "Agregar al carrito";
+      }, 1200);
+    };
+  } else {
+    modalBotonAgregar.textContent = "Agotado";
+    modalBotonAgregar.disabled = true;
+    modalBotonAgregar.onclick = null;
+  }
+}
+
+function irAImagenModal(index) {
+  imagenModalIndex = index;
+  renderizarModal();
+}
+
+// Cerrar el modal con la tecla Escape
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") cerrarModalProducto();
+});

@@ -48,13 +48,21 @@
         ⭐ Producto destacado
       </label>
 
+      <textarea name="descripcion" id="descripcion" placeholder="Descripción del producto (opcional)" rows="4"></textarea>
+
       <div id="imagenActual" class="imagen-actual-preview">
-        <p>Imagen actual:</p>
+        <p>Imagen principal actual:</p>
         <img id="previewImagen" src="" width="90">
         <p class="nota-imagen">Si no seleccionás una imagen nueva, se mantiene la actual.</p>
       </div>
 
+      <label class="etiqueta-campo">Imagen principal</label>
       <input type="file" name="imagen" id="imagenInput">
+
+      <div id="adicionalesActuales" class="imagen-actual-preview"></div>
+
+      <label class="etiqueta-campo">Imágenes adicionales (opcional, hasta 4)</label>
+      <input type="file" name="imagenesAdicionales" id="imagenesAdicionalesInput" multiple accept="image/*">
 
       <button type="submit" id="botonSubmit">Crear producto</button>
       <button type="button" id="botonCancelar" class="boton-cancelar">Cancelar edición</button>
