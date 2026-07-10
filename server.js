@@ -142,6 +142,7 @@ const resenaSchema = new mongoose.Schema({
   nombreCliente: { type: String, required: true, trim: true, maxlength: 60 },
   calificacion: { type: Number, required: true, min: 1, max: 5 },
   comentario: { type: String, required: true, trim: true, maxlength: 500 },
+  fotos: { type: [String], default: [] },
   aprobada: { type: Boolean, default: false },
   creadoEn: { type: Date, default: Date.now },
 });
@@ -223,6 +224,17 @@ const uploadProducto = upload.fields([
   { name: "imagen", maxCount: 1 },
   { name: "imagenesAdicionales", maxCount: 4 },
 ]);
+
+// Storage separado para fotos de reseñas (carpeta distinta en Cloudinary)
+const storageResenas = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "tienda-resenas",
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+  },
+});
+
+const uploadResenas = multer({ storage: storageResenas }).array("fotos", 3);
 
 // ==========================
 // Límites de intentos (protección contra fuerza bruta / spam)
@@ -653,20 +665,24 @@ app.delete("/pedidos/:id", verificarToken, async (req, res) => {
 // ==========================
 
 // Crear una reseña nueva (pública, queda pendiente de aprobación)
-app.post("/resenas", limiteResenas, async (req, res) => {
+app.post("/resenas", limiteResenas, uploadResenas, async (req, res) => {
   try {
     const { tipo, productoId, productoNombre, nombreCliente, calificacion, comentario } = req.body;
+    const fotos = req.files || [];
 
     if (!["tienda", "producto"].includes(tipo)) {
+      for (const foto of fotos) await cloudinary.uploader.destroy(foto.filename);
       return res.status(400).json({ mensaje: "Tipo de reseña inválido" });
     }
 
     if (tipo === "producto" && !productoId) {
+      for (const foto of fotos) await cloudinary.uploader.destroy(foto.filename);
       return res.status(400).json({ mensaje: "Falta el producto para esta reseña" });
     }
 
     const calificacionNum = Number(calificacion);
     if (!Number.isInteger(calificacionNum) || calificacionNum < 1 || calificacionNum > 5) {
+      for (const foto of fotos) await cloudinary.uploader.destroy(foto.filename);
       return res.status(400).json({ mensaje: "La calificación debe ser un número entre 1 y 5" });
     }
 
@@ -674,10 +690,12 @@ app.post("/resenas", limiteResenas, async (req, res) => {
     const comentarioLimpio = (comentario || "").trim();
 
     if (nombreLimpio.length < 2) {
+      for (const foto of fotos) await cloudinary.uploader.destroy(foto.filename);
       return res.status(400).json({ mensaje: "Ingresá tu nombre" });
     }
 
     if (comentarioLimpio.length < 5) {
+      for (const foto of fotos) await cloudinary.uploader.destroy(foto.filename);
       return res.status(400).json({ mensaje: "El comentario es muy corto" });
     }
 
@@ -688,6 +706,7 @@ app.post("/resenas", limiteResenas, async (req, res) => {
       nombreCliente: nombreLimpio,
       calificacion: calificacionNum,
       comentario: comentarioLimpio,
+      fotos: fotos.map((foto) => foto.path),
     });
 
     await nuevaResena.save();
@@ -753,6 +772,12 @@ app.delete("/resenas/:id", verificarToken, async (req, res) => {
 
     if (!resena) {
       return res.status(404).json({ mensaje: "Reseña no encontrada" });
+    }
+
+    for (const url of resena.fotos) {
+      const partes = url.split("/");
+      const nombreArchivo = partes[partes.length - 1].split(".")[0];
+      await cloudinary.uploader.destroy(`tienda-resenas/${nombreArchivo}`);
     }
 
     await Resena.findByIdAndDelete(req.params.id);

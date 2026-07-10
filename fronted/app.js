@@ -448,10 +448,24 @@ function renderizarListaTestimonios(contenedor, resenas, vacio) {
           <span class="testimonio-estrellas">${renderizarEstrellas(r.calificacion)}</span>
         </div>
         <p>${r.comentario}</p>
+        ${
+          r.fotos && r.fotos.length > 0
+            ? `<div class="testimonio-fotos">${r.fotos
+                .map(
+                  (foto) =>
+                    `<img src="${optimizarImagen(foto, 200)}" onclick="abrirFotoCompleta('${foto}')" loading="lazy">`
+                )
+                .join("")}</div>`
+            : ""
+        }
       </div>
     `
     )
     .join("");
+}
+
+function abrirFotoCompleta(url) {
+  window.open(url, "_blank");
 }
 
 function configurarSelectorEstrellas(contenedorId) {
@@ -505,17 +519,31 @@ formResenaTienda.addEventListener("submit", async (e) => {
   const nombreCliente = document.getElementById("nombreResenaTienda").value;
   const comentario = document.getElementById("comentarioResenaTienda").value;
   const calificacion = document.getElementById("estrellasResenaTienda").dataset.valor;
+  const fotos = document.getElementById("fotosResenaTienda").files;
 
   if (Number(calificacion) < 1) {
     alert("Elegí una calificación en estrellas");
     return;
   }
 
+  if (fotos.length > 3) {
+    alert("Podés subir como máximo 3 fotos");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("tipo", "tienda");
+  formData.append("nombreCliente", nombreCliente);
+  formData.append("calificacion", calificacion);
+  formData.append("comentario", comentario);
+  for (const foto of fotos) {
+    formData.append("fotos", foto);
+  }
+
   try {
     const res = await fetch(`${API_URL}/resenas`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tipo: "tienda", nombreCliente, calificacion, comentario }),
+      body: formData,
     });
 
     const data = await res.json();
@@ -570,24 +598,33 @@ formResenaProducto.addEventListener("submit", async (e) => {
   const nombreCliente = document.getElementById("nombreResenaProducto").value;
   const comentario = document.getElementById("comentarioResenaProducto").value;
   const calificacion = document.getElementById("estrellasResenaProducto").dataset.valor;
+  const fotos = document.getElementById("fotosResenaProducto").files;
 
   if (Number(calificacion) < 1) {
     alert("Elegí una calificación en estrellas");
     return;
   }
 
+  if (fotos.length > 3) {
+    alert("Podés subir como máximo 3 fotos");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("tipo", "producto");
+  formData.append("productoId", productoModalActual._id);
+  formData.append("productoNombre", productoModalActual.nombre);
+  formData.append("nombreCliente", nombreCliente);
+  formData.append("calificacion", calificacion);
+  formData.append("comentario", comentario);
+  for (const foto of fotos) {
+    formData.append("fotos", foto);
+  }
+
   try {
     const res = await fetch(`${API_URL}/resenas`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tipo: "producto",
-        productoId: productoModalActual._id,
-        productoNombre: productoModalActual.nombre,
-        nombreCliente,
-        calificacion,
-        comentario,
-      }),
+      body: formData,
     });
 
     const data = await res.json();

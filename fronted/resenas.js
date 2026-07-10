@@ -36,6 +36,11 @@ function formatearFecha(fechaISO) {
   });
 }
 
+function optimizarImagen(url, ancho = 150) {
+  if (!url || !url.includes("/upload/")) return url;
+  return url.replace("/upload/", `/upload/f_auto,q_auto,w_${ancho}/`);
+}
+
 function crearTarjetaResena(resena) {
   const div = document.createElement("div");
   div.className = "resena-card";
@@ -44,6 +49,13 @@ function crearTarjetaResena(resena) {
     resena.tipo === "producto"
       ? `Producto: ${resena.productoNombre || "—"}`
       : "Reseña general de la tienda";
+
+  const fotosHTML =
+    resena.fotos && resena.fotos.length > 0
+      ? `<div class="testimonio-fotos">${resena.fotos
+          .map((foto) => `<img src="${optimizarImagen(foto, 150)}" onclick="window.open('${foto}', '_blank')">`)
+          .join("")}</div>`
+      : "";
 
   div.innerHTML = `
     <div class="resena-header">
@@ -55,6 +67,7 @@ function crearTarjetaResena(resena) {
     </div>
     <p class="resena-tipo">${tipoLabel}</p>
     <p class="resena-comentario">${resena.comentario}</p>
+    ${fotosHTML}
     <div class="resena-acciones">
       ${!resena.aprobada ? `<button class="btn-aprobar">Aprobar</button>` : ""}
       <button class="btn-eliminar-resena">Eliminar</button>

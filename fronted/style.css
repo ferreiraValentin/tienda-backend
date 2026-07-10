@@ -773,6 +773,28 @@ button:disabled {
   margin: 0;
 }
 
+.testimonio-fotos {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.testimonio-fotos img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: .2s;
+}
+
+.testimonio-fotos img:hover {
+  border-color: var(--blue);
+  transform: scale(1.05);
+}
+
 .sin-resenas {
   color: var(--text-faint);
   grid-column: 1 / -1;
