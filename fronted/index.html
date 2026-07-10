@@ -134,6 +134,34 @@
 
   </div>
 
+  <section class="testimonios">
+    <h2>💬 Lo que dicen nuestros clientes</h2>
+
+    <div id="resumenCalificacion" class="resumen-calificacion"></div>
+
+    <div id="listaTestimonios" class="lista-testimonios"></div>
+
+    <button id="botonMostrarFormResena" class="boton-dejar-resena">Dejar una reseña</button>
+
+    <form id="formResenaTienda" class="form-resena oculto">
+      <h3>Contanos tu experiencia</h3>
+
+      <input type="text" id="nombreResenaTienda" placeholder="Tu nombre" required maxlength="60">
+
+      <div class="selector-estrellas" id="estrellasResenaTienda" data-valor="0">
+        <span data-valor="1">★</span>
+        <span data-valor="2">★</span>
+        <span data-valor="3">★</span>
+        <span data-valor="4">★</span>
+        <span data-valor="5">★</span>
+      </div>
+
+      <textarea id="comentarioResenaTienda" placeholder="Contanos cómo fue tu experiencia con la tienda..." rows="3" required maxlength="500"></textarea>
+
+      <button type="submit">Enviar reseña</button>
+    </form>
+  </section>
+
  <footer>
   <p>© 2025 Tienda Premium</p>
 
@@ -191,6 +219,30 @@
         <p class="stock" id="modalStock"></p>
         <p class="modal-precio" id="modalPrecio"></p>
         <button id="modalBotonAgregar"></button>
+
+        <div class="modal-resenas">
+          <h3>⭐ Reseñas de este producto</h3>
+          <div id="resumenCalificacionProducto" class="resumen-calificacion"></div>
+          <div id="listaResenasProducto" class="lista-testimonios"></div>
+
+          <button type="button" id="botonMostrarFormResenaProducto" class="boton-dejar-resena">Dejar una reseña</button>
+
+          <form id="formResenaProducto" class="form-resena oculto">
+            <input type="text" id="nombreResenaProducto" placeholder="Tu nombre" required maxlength="60">
+
+            <div class="selector-estrellas" id="estrellasResenaProducto" data-valor="0">
+              <span data-valor="1">★</span>
+              <span data-valor="2">★</span>
+              <span data-valor="3">★</span>
+              <span data-valor="4">★</span>
+              <span data-valor="5">★</span>
+            </div>
+
+            <textarea id="comentarioResenaProducto" placeholder="¿Qué te pareció este producto?" rows="3" required maxlength="500"></textarea>
+
+            <button type="submit">Enviar reseña</button>
+          </form>
+        </div>
       </div>
     </div>
   </div>

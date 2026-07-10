@@ -686,6 +686,205 @@ button:disabled {
 }
 
 /* ==========================================================
+   RESEÑAS / TESTIMONIOS
+   ========================================================== */
+
+.testimonios {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin: 30px 25px;
+  padding: 28px;
+  text-align: center;
+}
+
+.testimonios h2 {
+  margin-top: 0;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  letter-spacing: 1px;
+  color: var(--blue-soft);
+}
+
+.resumen-calificacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 10px 0 20px;
+  flex-wrap: wrap;
+}
+
+.estrellas-resumen,
+.testimonio-estrellas {
+  color: var(--border-strong);
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+}
+
+.estrella-fija.llena {
+  color: var(--gold);
+}
+
+.promedio-numero {
+  color: var(--text);
+  font-family: var(--font-accent);
+  font-weight: 700;
+}
+
+.cantidad-resenas {
+  color: var(--text-faint);
+  font-size: 13px;
+}
+
+.lista-testimonios {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.testimonio {
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+
+.testimonio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.testimonio-header strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.testimonio p {
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.sin-resenas {
+  color: var(--text-faint);
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.boton-dejar-resena {
+  background: transparent;
+  border: 1px solid var(--blue);
+  color: var(--blue-soft);
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: var(--font-accent);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: .2s;
+}
+
+.boton-dejar-resena:hover {
+  background: rgba(47, 140, 255, 0.1);
+}
+
+.form-resena {
+  max-width: 420px;
+  margin: 20px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.form-resena h3 {
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.form-resena input,
+.form-resena textarea {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-panel-alt);
+  color: var(--text);
+  font-family: var(--font-body);
+  resize: vertical;
+}
+
+.form-resena input::placeholder,
+.form-resena textarea::placeholder {
+  color: var(--text-faint);
+}
+
+.form-resena button {
+  background: linear-gradient(90deg, var(--blue), #1a5fc7);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 11px;
+  cursor: pointer;
+  font-family: var(--font-accent);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: .25s;
+}
+
+.form-resena button:hover {
+  box-shadow: 0 0 16px var(--blue-glow);
+}
+
+.selector-estrellas {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  font-size: 1.8rem;
+}
+
+.selector-estrellas span {
+  cursor: pointer;
+  color: var(--border-strong);
+  transition: .15s;
+}
+
+.selector-estrellas span.seleccionada {
+  color: var(--gold);
+}
+
+.modal-resenas {
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+  padding-top: 16px;
+  text-align: left;
+}
+
+.modal-resenas h3 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 1px;
+  color: var(--blue-soft);
+  text-align: center;
+  margin-top: 0;
+}
+
+.modal-resenas .lista-testimonios {
+  grid-template-columns: 1fr;
+}
+
+/* ==========================================================
    MODAL DE DETALLE DE PRODUCTO
    ========================================================== */
 
@@ -1079,6 +1278,87 @@ button:disabled {
 
 .top-productos li:last-child {
   border-bottom: none;
+}
+
+/* ==========================================================
+   RESEÑAS (admin)
+   ========================================================== */
+
+.resena-card {
+  background: var(--bg-panel-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  margin: 12px 0;
+}
+
+.resena-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.resena-header strong {
+  color: var(--text);
+}
+
+.resena-fecha {
+  color: var(--text-faint);
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.resena-estrellas {
+  color: var(--border-strong);
+  letter-spacing: 2px;
+}
+
+.resena-tipo {
+  color: var(--blue-soft);
+  font-size: 13px;
+  font-family: var(--font-accent);
+  font-weight: 600;
+  margin: 8px 0 4px;
+}
+
+.resena-comentario {
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 4px 0 12px;
+}
+
+.resena-acciones {
+  display: flex;
+  gap: 10px;
+}
+
+.resena-acciones .btn-aprobar {
+  background: var(--green);
+  color: #08240f;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  cursor: pointer;
+  font-family: var(--font-accent);
+  font-weight: 700;
+}
+
+.resena-acciones .btn-eliminar-resena {
+  background: transparent;
+  border: 1px solid var(--red);
+  color: var(--red-soft);
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  cursor: pointer;
+  font-family: var(--font-accent);
+  font-weight: 700;
+}
+
+.resena-acciones .btn-eliminar-resena:hover {
+  background: rgba(255, 47, 77, 0.1);
 }
 
 /* ==========================================================

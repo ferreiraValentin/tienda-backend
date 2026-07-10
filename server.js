@@ -128,6 +128,26 @@ const pedidoSchema = new mongoose.Schema({
 
 const Pedido = mongoose.model("Pedido", pedidoSchema);
 
+// ==========================
+// Modelo de Reseña
+// ==========================
+const resenaSchema = new mongoose.Schema({
+  tipo: {
+    type: String,
+    enum: ["tienda", "producto"],
+    required: true,
+  },
+  productoId: { type: String, default: null }, // solo si tipo === "producto"
+  productoNombre: { type: String, default: null },
+  nombreCliente: { type: String, required: true, trim: true, maxlength: 60 },
+  calificacion: { type: Number, required: true, min: 1, max: 5 },
+  comentario: { type: String, required: true, trim: true, maxlength: 500 },
+  aprobada: { type: Boolean, default: false },
+  creadoEn: { type: Date, default: Date.now },
+});
+
+const Resena = mongoose.model("Resena", resenaSchema);
+
 // Descuenta del stock las cantidades de cada item (usado al confirmar un pedido)
 async function descontarStock(items) {
   for (const item of items) {
@@ -222,6 +242,15 @@ const limitePedidos = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
   message: { mensaje: "Demasiadas solicitudes. Probá de nuevo en unos minutos." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Reseñas: máximo 10 cada 15 minutos por IP (evita spam)
+const limiteResenas = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { mensaje: "Demasiadas reseñas enviadas. Probá de nuevo en unos minutos." },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -616,6 +645,122 @@ app.delete("/pedidos/:id", verificarToken, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ mensaje: "Error al eliminar el pedido" });
+  }
+});
+
+// ==========================
+// Reseñas
+// ==========================
+
+// Crear una reseña nueva (pública, queda pendiente de aprobación)
+app.post("/resenas", limiteResenas, async (req, res) => {
+  try {
+    const { tipo, productoId, productoNombre, nombreCliente, calificacion, comentario } = req.body;
+
+    if (!["tienda", "producto"].includes(tipo)) {
+      return res.status(400).json({ mensaje: "Tipo de reseña inválido" });
+    }
+
+    if (tipo === "producto" && !productoId) {
+      return res.status(400).json({ mensaje: "Falta el producto para esta reseña" });
+    }
+
+    const calificacionNum = Number(calificacion);
+    if (!Number.isInteger(calificacionNum) || calificacionNum < 1 || calificacionNum > 5) {
+      return res.status(400).json({ mensaje: "La calificación debe ser un número entre 1 y 5" });
+    }
+
+    const nombreLimpio = (nombreCliente || "").trim();
+    const comentarioLimpio = (comentario || "").trim();
+
+    if (nombreLimpio.length < 2) {
+      return res.status(400).json({ mensaje: "Ingresá tu nombre" });
+    }
+
+    if (comentarioLimpio.length < 5) {
+      return res.status(400).json({ mensaje: "El comentario es muy corto" });
+    }
+
+    const nuevaResena = new Resena({
+      tipo,
+      productoId: tipo === "producto" ? productoId : null,
+      productoNombre: tipo === "producto" ? productoNombre || null : null,
+      nombreCliente: nombreLimpio,
+      calificacion: calificacionNum,
+      comentario: comentarioLimpio,
+    });
+
+    await nuevaResena.save();
+
+    res.json({ mensaje: "¡Gracias por tu opinión! Se va a publicar luego de ser revisada. ✅" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al enviar la reseña" });
+  }
+});
+
+// Listar reseñas aprobadas (público) — usado por la tienda
+// Filtros opcionales: ?tipo=tienda | ?tipo=producto&productoId=...
+app.get("/resenas", async (req, res) => {
+  try {
+    const filtro = { aprobada: true };
+
+    if (req.query.tipo) filtro.tipo = req.query.tipo;
+    if (req.query.productoId) filtro.productoId = req.query.productoId;
+
+    const resenas = await Resena.find(filtro).sort({ creadoEn: -1 });
+    res.json(resenas);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al obtener las reseñas" });
+  }
+});
+
+// Listar TODAS las reseñas, aprobadas o no (solo admin)
+app.get("/resenas/admin", verificarToken, async (req, res) => {
+  try {
+    const resenas = await Resena.find().sort({ creadoEn: -1 });
+    res.json(resenas);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al obtener las reseñas" });
+  }
+});
+
+// Aprobar una reseña (solo admin)
+app.put("/resenas/:id/aprobar", verificarToken, async (req, res) => {
+  try {
+    const resena = await Resena.findById(req.params.id);
+
+    if (!resena) {
+      return res.status(404).json({ mensaje: "Reseña no encontrada" });
+    }
+
+    resena.aprobada = true;
+    await resena.save();
+
+    res.json({ mensaje: "Reseña aprobada ✅", resena });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al aprobar la reseña" });
+  }
+});
+
+// Eliminar una reseña (solo admin) — para rechazar spam o borrar una ya aprobada
+app.delete("/resenas/:id", verificarToken, async (req, res) => {
+  try {
+    const resena = await Resena.findById(req.params.id);
+
+    if (!resena) {
+      return res.status(404).json({ mensaje: "Reseña no encontrada" });
+    }
+
+    await Resena.findByIdAndDelete(req.params.id);
+
+    res.json({ mensaje: "Reseña eliminada ✅" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al eliminar la reseña" });
   }
 });
 

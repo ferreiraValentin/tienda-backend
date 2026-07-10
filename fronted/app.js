@@ -322,6 +322,15 @@ function abrirModalProducto(id) {
   imagenModalIndex = 0;
   renderizarModal();
 
+  // Reseteamos el formulario de reseña de producto cada vez que se abre un producto distinto
+  const formResenaProducto = document.getElementById("formResenaProducto");
+  formResenaProducto.reset();
+  formResenaProducto.classList.add("oculto");
+  document.getElementById("estrellasResenaProducto").dataset.valor = 0;
+  document.querySelectorAll("#estrellasResenaProducto span").forEach((e) => e.classList.remove("seleccionada"));
+
+  cargarResenasProducto(id);
+
   modalOverlay.classList.remove("oculto");
 }
 
@@ -396,4 +405,202 @@ function irAImagenModal(index) {
 // Cerrar el modal con la tecla Escape
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") cerrarModalProducto();
+});
+
+// ==========================
+// Reseñas — helpers compartidos
+// ==========================
+
+function renderizarEstrellas(promedio) {
+  const llenas = Math.round(promedio);
+  let html = "";
+  for (let i = 1; i <= 5; i++) {
+    html += `<span class="estrella-fija ${i <= llenas ? "llena" : ""}">★</span>`;
+  }
+  return html;
+}
+
+function renderizarResumen(contenedor, resenas) {
+  if (resenas.length === 0) {
+    contenedor.innerHTML = "";
+    return;
+  }
+  const promedio = resenas.reduce((acc, r) => acc + r.calificacion, 0) / resenas.length;
+  contenedor.innerHTML = `
+    <div class="estrellas-resumen">${renderizarEstrellas(promedio)}</div>
+    <span class="promedio-numero">${promedio.toFixed(1)} / 5</span>
+    <span class="cantidad-resenas">(${resenas.length} reseña${resenas.length === 1 ? "" : "s"})</span>
+  `;
+}
+
+function renderizarListaTestimonios(contenedor, resenas, vacio) {
+  if (resenas.length === 0) {
+    contenedor.innerHTML = `<p class="sin-resenas">${vacio}</p>`;
+    return;
+  }
+
+  contenedor.innerHTML = resenas
+    .map(
+      (r) => `
+      <div class="testimonio">
+        <div class="testimonio-header">
+          <strong>${r.nombreCliente}</strong>
+          <span class="testimonio-estrellas">${renderizarEstrellas(r.calificacion)}</span>
+        </div>
+        <p>${r.comentario}</p>
+      </div>
+    `
+    )
+    .join("");
+}
+
+function configurarSelectorEstrellas(contenedorId) {
+  const contenedor = document.getElementById(contenedorId);
+  const estrellas = contenedor.querySelectorAll("span");
+
+  estrellas.forEach((estrella) => {
+    estrella.addEventListener("click", () => {
+      const valor = Number(estrella.dataset.valor);
+      contenedor.dataset.valor = valor;
+      estrellas.forEach((e) => {
+        e.classList.toggle("seleccionada", Number(e.dataset.valor) <= valor);
+      });
+    });
+  });
+}
+
+configurarSelectorEstrellas("estrellasResenaTienda");
+configurarSelectorEstrellas("estrellasResenaProducto");
+
+// ==========================
+// Reseñas de la tienda (generales)
+// ==========================
+
+const botonMostrarFormResena = document.getElementById("botonMostrarFormResena");
+const formResenaTienda = document.getElementById("formResenaTienda");
+
+botonMostrarFormResena.addEventListener("click", () => {
+  formResenaTienda.classList.toggle("oculto");
+});
+
+async function cargarTestimoniosTienda() {
+  try {
+    const res = await fetch(`${API_URL}/resenas?tipo=tienda`);
+    const resenas = await res.json();
+
+    renderizarResumen(document.getElementById("resumenCalificacion"), resenas);
+    renderizarListaTestimonios(
+      document.getElementById("listaTestimonios"),
+      resenas,
+      "Todavía no hay reseñas. ¡Sé el primero en dejar la tuya!"
+    );
+  } catch (error) {
+    console.error("Error al cargar testimonios:", error);
+  }
+}
+
+formResenaTienda.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const nombreCliente = document.getElementById("nombreResenaTienda").value;
+  const comentario = document.getElementById("comentarioResenaTienda").value;
+  const calificacion = document.getElementById("estrellasResenaTienda").dataset.valor;
+
+  if (Number(calificacion) < 1) {
+    alert("Elegí una calificación en estrellas");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/resenas`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tipo: "tienda", nombreCliente, calificacion, comentario }),
+    });
+
+    const data = await res.json();
+    alert(data.mensaje);
+
+    if (res.ok) {
+      formResenaTienda.reset();
+      document.getElementById("estrellasResenaTienda").dataset.valor = 0;
+      document.querySelectorAll("#estrellasResenaTienda span").forEach((e) => e.classList.remove("seleccionada"));
+      formResenaTienda.classList.add("oculto");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Error de conexión al enviar la reseña");
+  }
+});
+
+cargarTestimoniosTienda();
+
+// ==========================
+// Reseñas por producto (dentro del modal)
+// ==========================
+
+const botonMostrarFormResenaProducto = document.getElementById("botonMostrarFormResenaProducto");
+const formResenaProducto = document.getElementById("formResenaProducto");
+
+botonMostrarFormResenaProducto.addEventListener("click", () => {
+  formResenaProducto.classList.toggle("oculto");
+});
+
+async function cargarResenasProducto(productoId) {
+  try {
+    const res = await fetch(`${API_URL}/resenas?tipo=producto&productoId=${productoId}`);
+    const resenas = await res.json();
+
+    renderizarResumen(document.getElementById("resumenCalificacionProducto"), resenas);
+    renderizarListaTestimonios(
+      document.getElementById("listaResenasProducto"),
+      resenas,
+      "Todavía no hay reseñas para este producto."
+    );
+  } catch (error) {
+    console.error("Error al cargar reseñas del producto:", error);
+  }
+}
+
+formResenaProducto.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  if (!productoModalActual) return;
+
+  const nombreCliente = document.getElementById("nombreResenaProducto").value;
+  const comentario = document.getElementById("comentarioResenaProducto").value;
+  const calificacion = document.getElementById("estrellasResenaProducto").dataset.valor;
+
+  if (Number(calificacion) < 1) {
+    alert("Elegí una calificación en estrellas");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/resenas`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tipo: "producto",
+        productoId: productoModalActual._id,
+        productoNombre: productoModalActual.nombre,
+        nombreCliente,
+        calificacion,
+        comentario,
+      }),
+    });
+
+    const data = await res.json();
+    alert(data.mensaje);
+
+    if (res.ok) {
+      formResenaProducto.reset();
+      document.getElementById("estrellasResenaProducto").dataset.valor = 0;
+      document.querySelectorAll("#estrellasResenaProducto span").forEach((e) => e.classList.remove("seleccionada"));
+      formResenaProducto.classList.add("oculto");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Error de conexión al enviar la reseña");
+  }
 });
